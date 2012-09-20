@@ -112,9 +112,9 @@ namespace WizardsOrWhatever
             // rotate 1/4 of a circle per second
             j.MotorSpeed = MathHelper.PiOver2;
             // have little torque (power) so it can push away a few blocks
-            j.MotorTorque = 3;
+            j.MotorTorque = 50;
             j.MotorEnabled = true;
-            j.MaxMotorTorque = 10;
+            j.MaxMotorTorque = 100;
 
             paddles.Add(motorPaddle);
 
