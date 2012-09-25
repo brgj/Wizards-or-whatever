@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+//using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -26,14 +26,14 @@ namespace WizardsOrWhatever
 
         World world;
 
-        Player player;
+        Character player;
 
-        DrawablePhysicsObject ground;
-        DrawablePhysicsObject leftWall;
-        DrawablePhysicsObject rightWall;
-        DrawablePhysicsObject ceiling;
+        PhysicsObject ground;
+        PhysicsObject leftWall;
+        PhysicsObject rightWall;
+        PhysicsObject ceiling;
 
-        List<DrawablePhysicsObject> paddles;
+        List<PhysicsObject> paddles;
 
         float launchSpeed;
 
@@ -69,12 +69,11 @@ namespace WizardsOrWhatever
 
             Vector2 size = new Vector2(50, 50);
 
-            player = new Player(world, Content.Load<Texture2D>("Player"), new Vector2(35.0f, 50.0f));
-            player.Position = new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f);
+            player = new CompositeCharacter(world,new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f),
+                Content.Load<Texture2D>("Player"), new Vector2(35.0f, 50.0f));
 
-            ground = new DrawablePhysicsObject(world, Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f), 1000.0f);
-            ground.Position = new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f);
-            ground.body.BodyType = BodyType.Static;
+            ground = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f), 
+                Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f));
 
             //leftWall = new DrawablePhysicsObject(world, Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height), 1000.0f);
             //leftWall.Position = new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f);
@@ -90,11 +89,12 @@ namespace WizardsOrWhatever
 
             // *** Stolen from demo ***
 
-            paddles = new List<DrawablePhysicsObject>();
+            paddles = new List<PhysicsObject>();
 
             // Creates a simple paddle which center is anchored
             // in the background. It can rotate freely
-            DrawablePhysicsObject simplePaddle = new DrawablePhysicsObject(world, Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+            PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f - 150, GraphicsDevice.Viewport.Height - 300),
+                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, CoordinateHelper.ToWorld(new Vector2(0, 0)),
                 CoordinateHelper.ToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f - 150, GraphicsDevice.Viewport.Height - 300)));
@@ -104,7 +104,8 @@ namespace WizardsOrWhatever
             // Creates a motorized paddle which left side is anchored in the background
             // it will rotate slowly but the motoro is not set too strong that
             // it can push everything away
-            DrawablePhysicsObject motorPaddle = new DrawablePhysicsObject(world, Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+            PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280), 
+                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, CoordinateHelper.ToWorld(new Vector2(-48, 0)),
                 CoordinateHelper.ToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280)));
@@ -119,9 +120,7 @@ namespace WizardsOrWhatever
             paddles.Add(motorPaddle);
 
             // Use two line joints (a sort of springs) to create a trampoline
-            DrawablePhysicsObject trampolinePaddle = new DrawablePhysicsObject(world, Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            trampolinePaddle.Position = new Vector2(600, ground.Position.Y - 175);
+            PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, CoordinateHelper.ToWorld(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
 
@@ -162,12 +161,12 @@ namespace WizardsOrWhatever
                 this.Exit();
 
             KeyboardState keyboardState = Keyboard.GetState();
-            if (player.state != Player.CharState.Jumping)
+            if (player.state != Character.CharState.Jumping)
             {
-                //if (keyboardState.IsKeyDown(Keys.Space))
-                //{
-                //    Jump();
-                //}
+                if (keyboardState.IsKeyDown(Keys.Space))
+                {
+                    Jump();
+                }
                 if (keyboardState.IsKeyDown(Keys.Left))
                 {
                     RunLeft();
@@ -193,26 +192,26 @@ namespace WizardsOrWhatever
         private void Stop()
         {
             player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
-            player.state = Player.CharState.Idle;
+            player.state = Character.CharState.Idle;
         }
 
-        //private void Jump()
-        //{
-        //    launchSpeed = player.body.LinearVelocity.X;
-        //    player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
-        //    player.state = Player.CharState.Jumping;
-        //}
+        private void Jump()
+        {
+            launchSpeed = player.body.LinearVelocity.X;
+            player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
+            player.state = Character.CharState.Jumping;
+        }
 
         private void RunRight()
         {
             player.body.LinearVelocity = new Vector2(player.runSpeed, player.body.LinearVelocity.Y);
-            player.state = Player.CharState.Running;
+            player.state = Character.CharState.Running;
         }
 
         private void RunLeft()
         {
             player.body.LinearVelocity = new Vector2(-player.runSpeed, player.body.LinearVelocity.Y);
-            player.state = Player.CharState.Running;
+            player.state = Character.CharState.Running;
         }
 
         private void AirMove(KeyboardState keyboardState)
@@ -246,7 +245,7 @@ namespace WizardsOrWhatever
 
             player.Draw(spriteBatch);
 
-            foreach (DrawablePhysicsObject paddle in paddles)
+            foreach (PhysicsObject paddle in paddles)
             {
                 paddle.Draw(spriteBatch);
             }
