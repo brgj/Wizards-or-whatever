@@ -37,8 +37,7 @@ namespace WizardsOrWhatever
 
         protected virtual void SetUpPhysics(World world, Vector2 position, float mass)
         {
-            body = BodyFactory.CreateRectangle(world, ConvertUnits.ToSimUnits(size.X), ConvertUnits.ToSimUnits(size.Y), mass, ConvertUnits.ToSimUnits(position));
-            this.Position = position;
+            body = BodyFactory.CreateRectangle(world, size.X, size.Y, mass, ConvertUnits.ToSimUnits(position));
             body.BodyType = BodyType.Dynamic;
         }
 

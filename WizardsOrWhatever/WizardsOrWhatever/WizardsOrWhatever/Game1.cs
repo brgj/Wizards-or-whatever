@@ -93,7 +93,7 @@ namespace WizardsOrWhatever
 
             // Creates a simple paddle which center is anchored
             // in the background. It can rotate freely
-            PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f - 150, GraphicsDevice.Viewport.Height - 300),
+            PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
                 Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, CoordinateHelper.ToWorld(new Vector2(0, 0)),
@@ -197,6 +197,7 @@ namespace WizardsOrWhatever
 
         private void Jump()
         {
+            Console.WriteLine(player.state);
             launchSpeed = player.body.LinearVelocity.X;
             player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
             player.state = Character.CharState.Jumping;
@@ -204,13 +205,13 @@ namespace WizardsOrWhatever
 
         private void RunRight()
         {
-            player.body.LinearVelocity = new Vector2(player.runSpeed, player.body.LinearVelocity.Y);
+            player.body.ApplyLinearImpulse(new Vector2(1f, 0), player.body.Position);
             player.state = Character.CharState.Running;
         }
 
         private void RunLeft()
         {
-            player.body.LinearVelocity = new Vector2(-player.runSpeed, player.body.LinearVelocity.Y);
+            player.body.ApplyLinearImpulse(new Vector2(-1f, 0), player.body.Position);
             player.state = Character.CharState.Running;
         }
 
@@ -218,7 +219,7 @@ namespace WizardsOrWhatever
         {
             if ((player.launchSpeed > 0 && keyboardState.IsKeyDown(Keys.Left)) || (player.launchSpeed < 0 && keyboardState.IsKeyDown(Keys.Right)))
             {
-                player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
+                player.body.ApplyLinearImpulse(player.body.Position, player.jumpImpulse);
             }
             else
             {

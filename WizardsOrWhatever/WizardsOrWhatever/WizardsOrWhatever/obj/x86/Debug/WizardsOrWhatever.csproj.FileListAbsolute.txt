@@ -8,3 +8,13 @@ C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever
 C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\FarseerPhysicsXNA.dll
 C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
 C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Paddle.xnb
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\platformTex.xnb
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Player.xnb
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\WizardsOrWhatever.exe
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\WizardsOrWhatever.pdb
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\FarseerPhysicsXNA.dll
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
+C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb

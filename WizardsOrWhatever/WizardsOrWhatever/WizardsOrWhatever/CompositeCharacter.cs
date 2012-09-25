@@ -38,7 +38,7 @@ namespace WizardsOrWhatever
             float upperBodyHeight = size.Y - (size.X / 2);
 
             // Create upper body
-            body = BodyFactory.CreateRectangle(world, (float)ConvertUnits.ToSimUnits(size.X), (float)ConvertUnits.ToSimUnits(upperBodyHeight), mass / 2);
+            body = BodyFactory.CreateRectangle(world, size.X, upperBodyHeight, mass / 2);
             body.BodyType = BodyType.Dynamic;
             body.Restitution = 0.3f;
             body.Friction = 0.5f;
