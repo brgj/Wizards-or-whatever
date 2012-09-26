@@ -18,8 +18,8 @@ namespace WizardsOrWhatever
             Running
         }
 
-        public float runSpeed = 10f;
-        public Vector2 jumpImpulse = new Vector2(0, ConvertUnits.ToSimUnits(-100f));
+        public Vector2 jumpImpulse = new Vector2(0, ConvertUnits.ToSimUnits(-1000f));
+        public Vector2 runImpulse = new Vector2(ConvertUnits.ToSimUnits(10f), 0);
         public float launchSpeed;
         public CharState state;
         public CharState prevState;

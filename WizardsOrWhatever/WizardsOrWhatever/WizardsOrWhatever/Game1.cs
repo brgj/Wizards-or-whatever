@@ -167,7 +167,7 @@ namespace WizardsOrWhatever
                 {
                     Jump();
                 }
-                if (keyboardState.IsKeyDown(Keys.Left))
+                else if (keyboardState.IsKeyDown(Keys.Left))
                 {
                     RunLeft();
                 }
@@ -201,6 +201,7 @@ namespace WizardsOrWhatever
             launchSpeed = player.body.LinearVelocity.X;
             player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
             player.state = Character.CharState.Jumping;
+            Console.WriteLine(player.state);
         }
 
         private void RunRight()
