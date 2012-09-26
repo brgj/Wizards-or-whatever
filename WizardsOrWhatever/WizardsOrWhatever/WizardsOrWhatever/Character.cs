@@ -18,7 +18,7 @@ namespace WizardsOrWhatever
             Running
         }
 
-        public Vector2 jumpImpulse = new Vector2(0, ConvertUnits.ToSimUnits(-1000f));
+        public Vector2 jumpImpulse = new Vector2(0, ConvertUnits.ToSimUnits(-10f));
         public Vector2 runImpulse = new Vector2(ConvertUnits.ToSimUnits(10f), 0);
         public float launchSpeed;
         public CharState state;
@@ -29,10 +29,6 @@ namespace WizardsOrWhatever
         {
         }
 
-        new public void Draw(SpriteBatch spriteBatch)
-        {
-            Vector2 scale = new Vector2(Size.X / (float)texture.Width, Size.Y / (float)texture.Height);
-            spriteBatch.Draw(texture, Position, null, Color.White, 0f, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), scale, SpriteEffects.None, 0);
-        }
+        
     }
 }

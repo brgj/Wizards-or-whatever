@@ -26,7 +26,7 @@ namespace WizardsOrWhatever
 
         World world;
 
-        Character player;
+        CompositeCharacter player;
 
         PhysicsObject ground;
         PhysicsObject leftWall;
@@ -206,13 +206,13 @@ namespace WizardsOrWhatever
 
         private void RunRight()
         {
-            player.body.ApplyLinearImpulse(new Vector2(1f, 0), player.body.Position);
+            player.body.ApplyLinearImpulse(player.runImpulse, player.body.Position);
             player.state = Character.CharState.Running;
         }
 
         private void RunLeft()
         {
-            player.body.ApplyLinearImpulse(new Vector2(-1f, 0), player.body.Position);
+            player.body.ApplyLinearImpulse(-player.runImpulse, player.body.Position);
             player.state = Character.CharState.Running;
         }
 

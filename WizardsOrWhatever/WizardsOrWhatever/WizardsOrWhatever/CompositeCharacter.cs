@@ -31,6 +31,7 @@ namespace WizardsOrWhatever
             state = CharState.None;
 
             wheel.OnCollision += new OnCollisionEventHandler(OnCollision);
+            body.OnCollision += OnCollision;
         }
 
         protected override void SetUpPhysics(World world, Vector2 position, float mass)
@@ -38,7 +39,7 @@ namespace WizardsOrWhatever
             float upperBodyHeight = size.Y - (size.X / 2);
 
             // Create upper body
-            body = BodyFactory.CreateRectangle(world, size.X, upperBodyHeight, mass / 2);
+            body = BodyFactory.CreateRectangle(world, (float)ConvertUnits.ToSimUnits(size.X), (float)ConvertUnits.ToSimUnits(upperBodyHeight), mass / 2);
             body.BodyType = BodyType.Dynamic;
             body.Restitution = 0.3f;
             body.Friction = 0.5f;
@@ -50,10 +51,10 @@ namespace WizardsOrWhatever
 
             // Create lower body
             wheel = BodyFactory.CreateCircle(world, (float)ConvertUnits.ToSimUnits(size.X / 2), mass / 2);
+            wheel.Position = body.Position + ConvertUnits.ToSimUnits(Vector2.UnitY * (upperBodyHeight / 2));
             wheel.BodyType = BodyType.Dynamic;
             wheel.Restitution = 0.3f;
             wheel.Friction = 0.5f;
-            wheel.Position = ConvertUnits.ToSimUnits(position + (Vector2.UnitY * (upperBodyHeight / 2)));
 
             // Connecting bodies
             motor = JointFactory.CreateRevoluteJoint(world, body, wheel, Vector2.Zero);
@@ -70,11 +71,18 @@ namespace WizardsOrWhatever
 
         public bool OnCollision(Fixture fix1, Fixture fix2, Contact contact)
         {
-            if (state == CharState.Jumping && prevState == CharState.Jumping)
+            if (state == CharState.Jumping)
             {
                 state = CharState.None;
             }
             return true;
+        }
+
+        new public void Draw(SpriteBatch spriteBatch)
+        {
+            Vector2 scale = new Vector2(Size.X / (float)texture.Width, Size.Y / (float)texture.Height);
+            spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)size.X, (int)size.Y), null, Color.White, wheel.Rotation,new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
+            spriteBatch.Draw(texture, Position, null, Color.White, 0f, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), scale, SpriteEffects.None, 0);
         }
     }
 }
