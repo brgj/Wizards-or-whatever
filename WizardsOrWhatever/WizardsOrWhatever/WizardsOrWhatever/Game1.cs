@@ -69,7 +69,7 @@ namespace WizardsOrWhatever
 
             Vector2 size = new Vector2(50, 50);
 
-            player = new CompositeCharacter(world,new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f),
+            player = new CompositeCharacter(world,new Vector2(GraphicsDevice.Viewport.Width / 2.0f, 0),
                 Content.Load<Texture2D>("Player"), new Vector2(35.0f, 50.0f));
 
             ground = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f), 
