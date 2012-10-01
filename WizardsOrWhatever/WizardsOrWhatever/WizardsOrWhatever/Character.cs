@@ -12,20 +12,56 @@ namespace WizardsOrWhatever
     {
         public enum CharState
         {
-            None,
             Idle,
             Jumping,
-            Running
+            Running,
+            Wallslide
         }
 
-        public Vector2 jumpImpulse = new Vector2(0, ConvertUnits.ToSimUnits(-1000f));
-        public Vector2 runImpulse = new Vector2(ConvertUnits.ToSimUnits(100f), 0);
+        public enum CharDirection
+        {
+            Left,
+            Right
+        }
+
+        public Vector2 jumpImpulse = new Vector2(0, -5);
         public float launchSpeed;
-        public CharState state;
-        public CharState prevState;
+        protected CharState state = CharState.Idle;
+        protected CharState prevState;
+        protected CharDirection direction = CharDirection.Right;
+        protected CharDirection prevDirection;
+        public int runSpeed = 10;
+
+        public CharState State
+        {
+            get
+            {
+                return state;
+            }
+            set
+            {
+                prevState = state;
+                state = value;
+            }
+        }
+
+        public CharDirection Direction
+        {
+            get
+            {
+                return direction;
+            }
+            set
+            {
+                prevDirection = direction;
+                direction = value;
+            }
+        }
+
+
 
         public Character(World world, Vector2 position, Texture2D texture, Vector2 size)
-            : base(world, position, texture, size, 50f)
+            : base(world, position, texture, size, 10f)
         {
         }
 

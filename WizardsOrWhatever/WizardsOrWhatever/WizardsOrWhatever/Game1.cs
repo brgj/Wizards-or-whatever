@@ -35,8 +35,6 @@ namespace WizardsOrWhatever
 
         List<PhysicsObject> paddles;
 
-        float launchSpeed;
-
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -69,23 +67,20 @@ namespace WizardsOrWhatever
 
             Vector2 size = new Vector2(50, 50);
 
-            player = new CompositeCharacter(world,new Vector2(GraphicsDevice.Viewport.Width / 2.0f, 0),
-                Content.Load<Texture2D>("Player"), new Vector2(35.0f, 50.0f));
+            player = new CompositeCharacter(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f),
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
 
-            ground = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f), 
+            ground = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f),
                 Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f));
 
-            //leftWall = new DrawablePhysicsObject(world, Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height), 1000.0f);
-            //leftWall.Position = new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f);
-            //leftWall.body.BodyType = BodyType.Static;
+            leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
+                Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
 
-            //rightWall = new DrawablePhysicsObject(world, Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height), 1000.0f);
-            //rightWall.Position = new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f);
-            //rightWall.body.BodyType = BodyType.Static;
+            rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
+                Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
 
-            //ceiling = new DrawablePhysicsObject(world, Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f), 1000.0f);
-            //ceiling.Position = new Vector2(GraphicsDevice.Viewport.Width / 2.0f, 12.5f);
-            //ceiling.body.BodyType = BodyType.Static;
+            ceiling = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, 12.5f),
+                Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f));
 
             // *** Stolen from demo ***
 
@@ -96,19 +91,19 @@ namespace WizardsOrWhatever
             PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
                 Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
-            JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, CoordinateHelper.ToWorld(new Vector2(0, 0)),
-                CoordinateHelper.ToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f - 150, GraphicsDevice.Viewport.Height - 300)));
+            JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, ConvertUnits.ToSimUnits(new Vector2(0, 0)),
+                ConvertUnits.ToSimUnits(new Vector2(GraphicsDevice.Viewport.Width / 2.0f - 150, GraphicsDevice.Viewport.Height - 300)));
 
             paddles.Add(simplePaddle);
 
             // Creates a motorized paddle which left side is anchored in the background
             // it will rotate slowly but the motoro is not set too strong that
             // it can push everything away
-            PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280), 
+            PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280),
                 Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
-            var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, CoordinateHelper.ToWorld(new Vector2(-48, 0)),
-                CoordinateHelper.ToWorld(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280)));
+            var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, ConvertUnits.ToSimUnits(new Vector2(-48, 0)),
+                ConvertUnits.ToSimUnits(new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 280)));
 
             // rotate 1/4 of a circle per second
             j.MotorSpeed = MathHelper.PiOver2;
@@ -122,13 +117,13 @@ namespace WizardsOrWhatever
             // Use two line joints (a sort of springs) to create a trampoline
             PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
-            var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, CoordinateHelper.ToWorld(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
+            var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
 
             l.CollideConnected = true;
             l.Frequency = 2.0f;
             l.DampingRatio = 0.05f;
 
-            var r = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, CoordinateHelper.ToWorld(trampolinePaddle.Position + new Vector2(64, 0)), Vector2.UnitY);
+            var r = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position + new Vector2(64, 0)), Vector2.UnitY);
 
             r.CollideConnected = true;
             r.Frequency = 2.0f;
@@ -160,8 +155,21 @@ namespace WizardsOrWhatever
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
 
+            player.Update(gameTime);
+
             KeyboardState keyboardState = Keyboard.GetState();
-            if (player.state != Character.CharState.Jumping)
+            if (player.State == Character.CharState.Wallslide)
+            {
+                if (keyboardState.IsKeyDown(Keys.Left) && keyboardState.IsKeyDown(Keys.Space))
+                {
+                    WallJumpLeft();
+                }
+                else if (keyboardState.IsKeyDown(Keys.Right) && keyboardState.IsKeyDown(Keys.Space))
+                {
+                    WallJumpRight();
+                }
+            }
+            else if (player.State != Character.CharState.Jumping)
             {
                 if (keyboardState.IsKeyDown(Keys.Space))
                 {
@@ -191,40 +199,57 @@ namespace WizardsOrWhatever
 
         private void Stop()
         {
+            player.motor.MotorSpeed = 0;
             player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
-            player.state = Character.CharState.Idle;
+            player.State = Character.CharState.Idle;
         }
 
         private void Jump()
         {
-            Console.WriteLine(player.state);
-            launchSpeed = player.body.LinearVelocity.X;
+            player.launchSpeed = player.body.LinearVelocity.X;
             player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
-            player.state = Character.CharState.Jumping;
-            Console.WriteLine(player.state);
+            player.State = Character.CharState.Jumping;
         }
 
         private void RunRight()
         {
-            player.body.ApplyLinearImpulse(player.runImpulse, player.body.Position);
-            player.state = Character.CharState.Running;
+            player.motor.MotorSpeed = player.runSpeed;
+            player.State = Character.CharState.Running;
         }
 
         private void RunLeft()
         {
-            player.body.ApplyLinearImpulse(-player.runImpulse, player.body.Position);
-            player.state = Character.CharState.Running;
+            player.motor.MotorSpeed = -player.runSpeed;
+            player.State = Character.CharState.Running;
         }
 
         private void AirMove(KeyboardState keyboardState)
         {
-            if ((player.launchSpeed > 0 && keyboardState.IsKeyDown(Keys.Left)) || (player.launchSpeed < 0 && keyboardState.IsKeyDown(Keys.Right)))
+            if ((keyboardState.IsKeyDown(Keys.Left) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.Right) && player.launchSpeed > 0))
             {
-                player.body.ApplyLinearImpulse(player.body.Position, player.jumpImpulse);
+                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
             }
-            else
+            else if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.Left))
             {
-                player.body.LinearVelocity = new Vector2(launchSpeed, player.body.LinearVelocity.Y);
+                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+            }
+        }
+
+        private void WallJumpLeft()
+        {
+            if (player.launchSpeed > 0)
+            {
+                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+                Jump();
+            }
+        }
+
+        private void WallJumpRight()
+        {
+            if (player.launchSpeed < 0)
+            {
+                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+                Jump();
             }
         }
 
@@ -241,9 +266,9 @@ namespace WizardsOrWhatever
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
 
             ground.Draw(spriteBatch);
-            //leftWall.Draw(spriteBatch);
-            //rightWall.Draw(spriteBatch);
-            //ceiling.Draw(spriteBatch);
+            leftWall.Draw(spriteBatch);
+            rightWall.Draw(spriteBatch);
+            ceiling.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
 

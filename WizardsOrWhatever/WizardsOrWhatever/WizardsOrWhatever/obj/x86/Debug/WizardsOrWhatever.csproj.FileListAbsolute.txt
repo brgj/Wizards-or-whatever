@@ -18,3 +18,4 @@ C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\Wiza
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb

@@ -28,6 +28,15 @@
       <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Player.xnb</Output>
       <Time>2012-09-18T22:35:50.0587938-07:00</Time>
     </Item>
+    <Item>
+      <Source>bean_ss1.png</Source>
+      <Name>bean_ss1</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb</Output>
+      <Time>2012-10-01T03:02:48.0605114-07:00</Time>
+    </Item>
     <BuildSuccessful>true</BuildSuccessful>
     <Settings>
       <TargetPlatform>Windows</TargetPlatform>

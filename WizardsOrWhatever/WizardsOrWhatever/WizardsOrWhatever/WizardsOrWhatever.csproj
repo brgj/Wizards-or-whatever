@@ -112,7 +112,6 @@
   <ItemGroup>
     <Compile Include="CompositeCharacter.cs" />
     <Compile Include="ConvertUnits.cs" />
-    <Compile Include="CoordinateHelper.cs" />
     <Compile Include="PhysicsObject.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
