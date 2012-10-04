@@ -20,12 +20,16 @@ namespace WizardsOrWhatever
     /// </summary>
     public class Game1 : Microsoft.Xna.Framework.Game
     {
+        //Adds a new camera object, follows the character
+        Camera camera;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         World world;
 
+        //Position of character to be followed by the camera
+        public Vector2 position;
         CompositeCharacter player;
 
         PhysicsObject ground;
@@ -50,7 +54,7 @@ namespace WizardsOrWhatever
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
+            camera = new Camera(GraphicsDevice.Viewport);
             base.Initialize();
         }
 
@@ -73,11 +77,11 @@ namespace WizardsOrWhatever
             ground = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height - 12.5f),
                 Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f));
 
-            leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
+            //leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
+                //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
 
-            rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
+            //rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
+                //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
 
             ceiling = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, 12.5f),
                 Content.Load<Texture2D>("platformTex"), new Vector2(GraphicsDevice.Viewport.Width, 25.0f));
@@ -259,15 +263,17 @@ namespace WizardsOrWhatever
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            position = player.Position;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             Vector2 size = new Vector2(50, 50);
 
-            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+            //camer.transform applies the matrix transform to the sprite base to move with the camera
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
 
             ground.Draw(spriteBatch);
-            leftWall.Draw(spriteBatch);
-            rightWall.Draw(spriteBatch);
+            //leftWall.Draw(spriteBatch);
+            //rightWall.Draw(spriteBatch);
             ceiling.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
@@ -278,7 +284,7 @@ namespace WizardsOrWhatever
             }
 
             spriteBatch.End();
-
+            camera.Update(gameTime, this);
             base.Draw(gameTime);
         }
     }

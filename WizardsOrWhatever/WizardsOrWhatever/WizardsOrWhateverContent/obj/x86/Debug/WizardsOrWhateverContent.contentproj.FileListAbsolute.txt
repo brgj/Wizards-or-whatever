@@ -1,2 +1,3 @@
 C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\obj\x86\Debug\ResolveAssemblyReference.cache
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\obj\x86\Debug\ResolveAssemblyReference.cache

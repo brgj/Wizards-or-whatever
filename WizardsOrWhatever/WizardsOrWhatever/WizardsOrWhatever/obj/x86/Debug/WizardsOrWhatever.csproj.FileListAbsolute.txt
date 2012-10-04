@@ -19,3 +19,14 @@ C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\Wiza
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
 C:\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb
 C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Paddle.xnb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\platformTex.xnb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Player.xnb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\WizardsOrWhatever.exe
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\WizardsOrWhatever.pdb
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\FarseerPhysicsXNA.dll
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
+C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb
