@@ -219,5 +219,153 @@ namespace WizardsOrWhatever
             //spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)ConvertUnits.ToDisplayUnits(size.X), (int)ConvertUnits.ToDisplayUnits(size.Y)), null, Color.White, wheel.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
             spriteBatch.Draw(texture, Position, GetSpriteRect(), Color.White, 0f, new Vector2(texWidth / 2.0f, texHeight / 2.0f), scale, SpriteEffects.None, 0);
         }
+
+
+
+
+        //
+        private class Input
+        {
+            private void KeyboardInput()
+        {
+            KeyboardState keyboardState = Keyboard.GetState();
+            if (State == Character.CharState.Wallslide)
+            {
+                if (keyboardState.IsKeyDown(Keys.Left) && keyboardState.IsKeyDown(Keys.Space))
+                {
+                    WallJumpLeft();
+                }
+                else if (keyboardState.IsKeyDown(Keys.Right) && keyboardState.IsKeyDown(Keys.Space))
+                {
+                    WallJumpRight();
+                }
+            }
+            else if (State != Character.CharState.Jumping)
+            {
+                if (keyboardState.IsKeyDown(Keys.Space))
+                {
+                    Jump();
+                }
+                else if (keyboardState.IsKeyDown(Keys.Left))
+                {
+                    RunLeft();
+                }
+                else if (keyboardState.IsKeyDown(Keys.Right))
+                {
+                    RunRight();
+                }
+                else
+                {
+                    Stop();
+                }
+            }
+            else
+            {
+                AirMove(keyboardState);
+            }
+        }
+
+        //TODO: move keyboard input to other class.
+        private void GamePadInput()
+        {
+            //Making an array of 1 gamepad, will be adjusted later in it's own class
+
+            // Allows the game to exit
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
+                this.Exit();
+
+            if (State == Character.CharState.Wallslide)
+            {
+                if (IsKeyDown(Keys.Left) && IsKeyDown(Keys.Space))
+                {
+                    WallJumpLeft();
+                }
+                else if (IsKeyDown(Keys.Right) && IsKeyDown(Keys.Space))
+                {
+                    WallJumpRight();
+                }
+            }
+            else if (State != Character.CharState.Jumping)
+            {
+                if (IsKeyDown(Keys.Space))
+                {
+                    Jump();
+                }
+                else if (IsKeyDown(Keys.Left))
+                {
+                    RunLeft();
+                }
+                else if (IsKeyDown(Keys.Right))
+                {
+                    RunRight();
+                }
+                else
+                {
+                    Stop();
+                }
+            }
+            else
+            {
+                AirMove(keyboardState);
+            }
+        }
+
+        private void Stop()
+        {
+            player.motor.MotorSpeed = 0;
+            player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
+            player.State = Character.CharState.Idle;
+        }
+
+        private void Jump()
+        {
+            player.launchSpeed = player.body.LinearVelocity.X;
+            player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
+            player.State = Character.CharState.Jumping;
+        }
+
+        private void RunRight()
+        {
+            player.motor.MotorSpeed = player.runSpeed;
+            player.State = Character.CharState.Running;
+        }
+
+        private void RunLeft()
+        {
+            player.motor.MotorSpeed = -player.runSpeed;
+            player.State = Character.CharState.Running;
+        }
+
+        private void AirMove(KeyboardState keyboardState)
+        {
+            if ((keyboardState.IsKeyDown(Keys.Left) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.Right) && player.launchSpeed > 0))
+            {
+                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+            }
+            else if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.Left))
+            {
+                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+            }
+        }
+
+        private void WallJumpLeft()
+        {
+            if (player.launchSpeed > 0)
+            {
+                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+                Jump();
+            }
+        }
+
+        private void WallJumpRight()
+        {
+            if (player.launchSpeed < 0)
+            {
+                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+                Jump();
+            }
+        }
+    }
+        }
     }
 }

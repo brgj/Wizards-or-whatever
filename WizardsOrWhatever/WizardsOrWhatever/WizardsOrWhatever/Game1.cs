@@ -23,6 +23,9 @@ namespace WizardsOrWhatever
         //Adds a new camera object, follows the character
         Camera camera;
 
+        //Uses player 1 if the controller is plugged in
+        GamePad gamepad1;
+
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -155,106 +158,21 @@ namespace WizardsOrWhatever
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
-                this.Exit();
-
-            player.Update(gameTime);
-
-            KeyboardState keyboardState = Keyboard.GetState();
-            if (player.State == Character.CharState.Wallslide)
+            GamePadState currentState = GamePad.GetState(PlayerIndex.One);
+            if (currentState.IsConnected)
             {
-                if (keyboardState.IsKeyDown(Keys.Left) && keyboardState.IsKeyDown(Keys.Space))
-                {
-                    WallJumpLeft();
-                }
-                else if (keyboardState.IsKeyDown(Keys.Right) && keyboardState.IsKeyDown(Keys.Space))
-                {
-                    WallJumpRight();
-                }
-            }
-            else if (player.State != Character.CharState.Jumping)
-            {
-                if (keyboardState.IsKeyDown(Keys.Space))
-                {
-                    Jump();
-                }
-                else if (keyboardState.IsKeyDown(Keys.Left))
-                {
-                    RunLeft();
-                }
-                else if (keyboardState.IsKeyDown(Keys.Right))
-                {
-                    RunRight();
-                }
-                else
-                {
-                    Stop();
-                }
+                //GamePadInput();
             }
             else
             {
-                AirMove(keyboardState);
+                //KeyboardInput();
             }
+
+            player.Update(gameTime);
+            
             world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             base.Update(gameTime);
-        }
-
-        private void Stop()
-        {
-            player.motor.MotorSpeed = 0;
-            player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
-            player.State = Character.CharState.Idle;
-        }
-
-        private void Jump()
-        {
-            player.launchSpeed = player.body.LinearVelocity.X;
-            player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
-            player.State = Character.CharState.Jumping;
-        }
-
-        private void RunRight()
-        {
-            player.motor.MotorSpeed = player.runSpeed;
-            player.State = Character.CharState.Running;
-        }
-
-        private void RunLeft()
-        {
-            player.motor.MotorSpeed = -player.runSpeed;
-            player.State = Character.CharState.Running;
-        }
-
-        private void AirMove(KeyboardState keyboardState)
-        {
-            if ((keyboardState.IsKeyDown(Keys.Left) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.Right) && player.launchSpeed > 0))
-            {
-                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
-            }
-            else if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.Left))
-            {
-                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
-            }
-        }
-
-        private void WallJumpLeft()
-        {
-            if (player.launchSpeed > 0)
-            {
-                player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
-                Jump();
-            }
-        }
-
-        private void WallJumpRight()
-        {
-            if (player.launchSpeed < 0)
-            {
-                player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
-                Jump();
-            }
         }
 
         /// <summary>
