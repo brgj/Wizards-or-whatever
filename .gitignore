@@ -1,13 +1,20 @@
+# Build Folders #
+#################
+[Bb]in/
+[Oo]bj/
+
+# VS User Settings #
+####################
+*.suo
+
 # Compiled source #
 ###################
 *.com
 *.class
-*.dll
 *.exe
 *.o
 *.so
 *.pdb
-*.suo
 
 # Packages #
 ############

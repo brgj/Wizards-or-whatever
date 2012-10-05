@@ -1,6 +1,0 @@
-Content\Paddle.xnb
-Content\platformTex.xnb
-Content\Player.xnb
-Content\bean_ss1.xnb
-Content\ground.xnb
-Content\Terrain.xnb

@@ -1,2 +1,0 @@
-D:\Dropbox\BCIT\Semester3\COMP-3903\Farseer Physics Engine 3.3.1 Testbed XNA\DebugView XNA\Content\obj\x86\Debug\ResolveAssemblyReference.cache
-C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\DebugView XNA\Content\obj\x86\Debug\ResolveAssemblyReference.cache
