@@ -14,4 +14,4 @@ git checkout <file>
 !!IMPORTANT!!
 **** Use this to ignore non-source files in your git repo ****
 
-git config --global core.excludesfile <path to git directory>/.gitignore
+git config --global core.excludesfile \<path to git directory\>/.gitignore
