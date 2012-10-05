@@ -30,3 +30,8 @@ C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrW
 C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\Microsoft.Xna.Framework.RuntimeProfile.txt
 C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.exe
 C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\obj\x86\Debug\WizardsOrWhatever.pdb
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\ground.xnb
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Terrain.xnb
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\DebugViewXNA.dll
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\DebugViewXNA.pdb
+C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\DebugViewXNA.xml

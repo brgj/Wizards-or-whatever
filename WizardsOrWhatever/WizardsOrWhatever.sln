@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WizardsOrWhatever", "WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever.csproj", "{CAA79920-D6E6-4709-B510-7ED5D51D1A92}"
 EndProject
-Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "WizardsOrWhateverContent", "WizardsOrWhatever\WizardsOrWhateverContent\WizardsOrWhateverContent.contentproj", "{D3941EFF-1614-4B44-B5B8-D88CDAE396EE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WizardsOrWhateverContent", "WizardsOrWhatever\WizardsOrWhateverContent\WizardsOrWhateverContent.contentproj", "{D3941EFF-1614-4B44-B5B8-D88CDAE396EE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DebugView XNA", "DebugView XNA\DebugView XNA.csproj", "{FC7845FA-13FE-4FF8-822A-A577F3F59B00}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,6 +19,10 @@ Global
 		{CAA79920-D6E6-4709-B510-7ED5D51D1A92}.Release|x86.Build.0 = Release|x86
 		{D3941EFF-1614-4B44-B5B8-D88CDAE396EE}.Debug|x86.ActiveCfg = Debug|x86
 		{D3941EFF-1614-4B44-B5B8-D88CDAE396EE}.Release|x86.ActiveCfg = Release|x86
+		{FC7845FA-13FE-4FF8-822A-A577F3F59B00}.Debug|x86.ActiveCfg = Debug|x86
+		{FC7845FA-13FE-4FF8-822A-A577F3F59B00}.Debug|x86.Build.0 = Debug|x86
+		{FC7845FA-13FE-4FF8-822A-A577F3F59B00}.Release|x86.ActiveCfg = Release|x86
+		{FC7845FA-13FE-4FF8-822A-A577F3F59B00}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

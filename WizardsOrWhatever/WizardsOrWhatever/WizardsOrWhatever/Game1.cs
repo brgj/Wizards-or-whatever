@@ -12,6 +12,9 @@ using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Contacts;
 using FarseerPhysics.Factories;
 using FarseerPhysics.Common;
+using FarseerPhysics.Collision;
+using FarseerPhysics.DebugViews;
+using FarseerPhysics;
 
 namespace WizardsOrWhatever
 {
@@ -23,17 +26,15 @@ namespace WizardsOrWhatever
         //Adds a new camera object, follows the character
         Camera camera;
 
-        //Uses player 1 if the controller is plugged in
-        GamePad gamepad1;
-
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
         World world;
 
         //Position of character to be followed by the camera
-        public Vector2 position;
         CompositeCharacter player;
+
+        MSTerrain terrain;
 
         PhysicsObject ground;
         PhysicsObject leftWall;
@@ -42,10 +43,29 @@ namespace WizardsOrWhatever
 
         List<PhysicsObject> paddles;
 
+        //TODO: get DebugView working properly
+        //TODO: get MSTerrain working properly
+        DebugViewXNA DebugView;
+
+        private Matrix projection, view;
+
         public Game1()
         {
-            graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            graphics = new GraphicsDeviceManager(this);
+
+            world = new World(new Vector2(0, 9.8f));
+
+            terrain = new MSTerrain(world, new AABB(new Vector2(0, 0), 80, 80))
+            {
+                PointsPerUnit = 10,
+                CellSize = 50,
+                SubCellSize = 5,
+                Decomposer = Decomposer.Earclip,
+                Iterations = 2
+            };
+
+            terrain.Initialize();
         }
 
         /// <summary>
@@ -58,6 +78,19 @@ namespace WizardsOrWhatever
         {
             // TODO: Add your initialization logic here
             camera = new Camera(GraphicsDevice.Viewport);
+            Settings.EnableDiagnostics = true;
+            DebugView = new DebugViewXNA(world);
+            DebugView.LoadContent(GraphicsDevice, Content);
+            projection = Matrix.CreateOrthographic(
+                graphics.PreferredBackBufferWidth / 100.0f,
+                -graphics.PreferredBackBufferHeight / 100.0f, 0, 1000000);
+            Vector3 campos = new Vector3();
+            campos.X = (-graphics.PreferredBackBufferWidth / 2) / 100.0f;
+            campos.Y = (graphics.PreferredBackBufferHeight / 2) / -100.0f;
+            campos.Z = 0;
+            Matrix tran = Matrix.Identity;
+            tran.Translation = campos;
+            view = tran;
             base.Initialize();
         }
 
@@ -70,9 +103,7 @@ namespace WizardsOrWhatever
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            world = new World(new Vector2(0, 9.8f));
-
-            Vector2 size = new Vector2(50, 50);
+            //terrain.ApplyTexture(Content.Load<Texture2D>("Terrain"), new Vector2(200, 0), InsideTerrainTest);
 
             player = new CompositeCharacter(world, new Vector2(GraphicsDevice.Viewport.Width / 2.0f, GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
@@ -161,12 +192,12 @@ namespace WizardsOrWhatever
             GamePadState currentState = GamePad.GetState(PlayerIndex.One);
             if (currentState.IsConnected)
             {
-                //GamePadInput();
+                player.move(currentState);
             }
             else
             {
-                //KeyboardInput();
-            }
+                player.move();
+            } 
 
             player.Update(gameTime);
             
@@ -181,10 +212,9 @@ namespace WizardsOrWhatever
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            position = player.Position;
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            Vector2 size = new Vector2(50, 50);
+            //DebugView.RenderDebugData(ref projection, ref view);
 
             //camer.transform applies the matrix transform to the sprite base to move with the camera
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
@@ -202,8 +232,13 @@ namespace WizardsOrWhatever
             }
 
             spriteBatch.End();
-            camera.Update(gameTime, this);
+            camera.Update(player);
             base.Draw(gameTime);
+        }
+
+        private bool InsideTerrainTest(Color color)
+        {
+            return color == Color.Black;
         }
     }
 }

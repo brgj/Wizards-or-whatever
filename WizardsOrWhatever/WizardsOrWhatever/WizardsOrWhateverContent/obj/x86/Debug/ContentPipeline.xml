@@ -7,8 +7,8 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Paddle.xnb</Output>
-      <Time>2012-09-19T20:47:32.9920206-07:00</Time>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Paddle.xnb</Output>
+      <Time>2012-09-16T13:54:51.9117878-07:00</Time>
     </Item>
     <Item>
       <Source>platformTex.png</Source>
@@ -16,8 +16,8 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\platformTex.xnb</Output>
-      <Time>2012-09-19T20:47:33.0060214-07:00</Time>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\platformTex.xnb</Output>
+      <Time>2012-09-19T18:41:09.0688049-07:00</Time>
     </Item>
     <Item>
       <Source>Player.png</Source>
@@ -25,8 +25,8 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Player.xnb</Output>
-      <Time>2012-09-19T20:47:32.9930207-07:00</Time>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Player.xnb</Output>
+      <Time>2012-09-18T22:35:50.0587938-07:00</Time>
     </Item>
     <Item>
       <Source>bean_ss1.png</Source>
@@ -34,8 +34,26 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <Options>None</Options>
-      <Output>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb</Output>
-      <Time>2012-10-03T17:33:11.9322346-07:00</Time>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\bean_ss1.xnb</Output>
+      <Time>2012-10-01T03:02:48.0605114-07:00</Time>
+    </Item>
+    <Item>
+      <Source>ground.jpg</Source>
+      <Name>ground</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\ground.xnb</Output>
+      <Time>2012-07-25T23:01:51-07:00</Time>
+    </Item>
+    <Item>
+      <Source>Terrain.png</Source>
+      <Name>Terrain</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+      <Options>None</Options>
+      <Output>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\Terrain.xnb</Output>
+      <Time>2012-09-28T06:16:12.045782-07:00</Time>
     </Item>
     <BuildSuccessful>true</BuildSuccessful>
     <Settings>
@@ -43,39 +61,39 @@
       <TargetProfile>HiDef</TargetProfile>
       <BuildConfiguration>Debug</BuildConfiguration>
       <CompressContent>false</CompressContent>
-      <RootDirectory>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\</RootDirectory>
-      <LoggerRootDirectory>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\</LoggerRootDirectory>
-      <IntermediateDirectory>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\obj\x86\Debug\</IntermediateDirectory>
-      <OutputDirectory>C:\Users\Owner\Documents\GitHub\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\</OutputDirectory>
+      <RootDirectory>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\</RootDirectory>
+      <LoggerRootDirectory>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\</LoggerRootDirectory>
+      <IntermediateDirectory>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhateverContent\obj\x86\Debug\</IntermediateDirectory>
+      <OutputDirectory>C:\apps\cygwin\home\Brad\Wizards-or-whatever\WizardsOrWhatever\WizardsOrWhatever\WizardsOrWhatever\bin\x86\Debug\Content\</OutputDirectory>
     </Settings>
     <Assemblies>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.XImporter.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.VideoImporters.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.TextureImporter.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.FBXImporter.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.EffectImporter.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Program Files (x86)\Microsoft XNA\XNA Game Studio\v4.0\References\Windows\x86\Microsoft.Xna.Framework.Content.Pipeline.AudioImporters.dll</Key>
-        <Value>2010-08-23T13:41:18-07:00</Value>
+        <Value>2010-08-23T12:41:18-07:00</Value>
       </Assembly>
       <Assembly>
         <Key>C:\Windows\Microsoft.Net\assembly\GAC_32\Microsoft.Xna.Framework.Content.Pipeline\v4.0_4.0.0.0__842cf8be1de50553\Microsoft.Xna.Framework.Content.Pipeline.dll</Key>
-        <Value>2012-01-04T18:37:59.8635557-08:00</Value>
+        <Value>2012-07-05T02:10:58.5620992-07:00</Value>
       </Assembly>
     </Assemblies>
   </Asset>
