@@ -8,7 +8,7 @@ Game project for COMP 3903
 git reset --hard HEAD
 	- Resets all uncommitted work to the last check-in
 
-git checkout <file>
+git checkout \<file\>
 	- Resets a specific file to the last check-in
 
 !!IMPORTANT!!
