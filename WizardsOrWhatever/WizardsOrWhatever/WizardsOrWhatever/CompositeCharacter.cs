@@ -28,6 +28,7 @@ namespace WizardsOrWhatever
         private int prevSpriteY = 0;
         protected float spriteTimer = 0f;
         protected float spriteInterval = 100f;
+        Input input;
 
         int SpriteX
         {
@@ -69,6 +70,7 @@ namespace WizardsOrWhatever
                 throw new Exception("Cannot make character with width > height");
             }
 
+            input = new Input(this);
             texWidth = (int)size.X;
             texHeight = (int)size.Y;
 
@@ -89,7 +91,6 @@ namespace WizardsOrWhatever
         protected override void SetUpPhysics(World world, Vector2 position, float mass)
         {
             float upperBodyHeight = size.Y - (size.X / 2);
-
             // Create upper body
             body = BodyFactory.CreateRectangle(world, (float)size.X, (float)upperBodyHeight, mass / 2);
             body.BodyType = BodyType.Dynamic;
@@ -119,7 +120,7 @@ namespace WizardsOrWhatever
 
             wheel.Friction = float.MaxValue;
         }
-
+        
         /// <summary>
         /// Called when the character's wheel collides with something and switches character state to idle from jumping
         /// </summary>
@@ -218,6 +219,172 @@ namespace WizardsOrWhatever
             Vector2 scale = new Vector2(Size.X / (float)texWidth, Size.Y / (float)texHeight);
             //spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)ConvertUnits.ToDisplayUnits(size.X), (int)ConvertUnits.ToDisplayUnits(size.Y)), null, Color.White, wheel.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
             spriteBatch.Draw(texture, Position, GetSpriteRect(), Color.White, 0f, new Vector2(texWidth / 2.0f, texHeight / 2.0f), scale, SpriteEffects.None, 0);
+        }
+
+        public void move(GamePadState gamePad)
+        {
+            input.GamePadInput(gamePad);
+        }
+        public void move()
+        {
+            input.KeyboardInput();
+        }
+
+        //
+        private class Input
+        {
+            CompositeCharacter player;
+            public Input(CompositeCharacter character)
+            {
+                player = character;
+            }
+
+            public void KeyboardInput()
+            {
+                KeyboardState keyboardState = Keyboard.GetState();
+                if (player.State == Character.CharState.Wallslide)
+                {
+                    if (keyboardState.IsKeyDown(Keys.Left) && keyboardState.IsKeyDown(Keys.Space))
+                    {
+                        WallJumpLeft();
+                    }
+                    else if (keyboardState.IsKeyDown(Keys.Right) && keyboardState.IsKeyDown(Keys.Space))
+                    {
+                        WallJumpRight();
+                    }
+                }
+                else if (player.State != Character.CharState.Jumping)
+                {
+                    if (keyboardState.IsKeyDown(Keys.Space))
+                    {
+                        Jump();
+                    }
+                    else if (keyboardState.IsKeyDown(Keys.Left))
+                    {
+                        RunLeft();
+                    }
+                    else if (keyboardState.IsKeyDown(Keys.Right))
+                    {
+                        RunRight();
+                    }
+                    else
+                    {
+                        Stop();
+                    }
+                }
+                else
+                {
+                    AirMove(keyboardState);
+                }
+            }
+
+            public void GamePadInput(GamePadState gamePad)
+            {
+                
+
+                if (player.State == Character.CharState.Wallslide)
+                {
+                    if (gamePad.ThumbSticks.Left.X < -0.5 && gamePad.Buttons.A == ButtonState.Pressed)
+                    {
+                        WallJumpLeft();
+                    }
+                    else if (gamePad.ThumbSticks.Left.X > 0.5 && gamePad.Buttons.A == ButtonState.Pressed)
+                    {
+                        WallJumpRight();
+                    }
+                }
+                else if (player.State != Character.CharState.Jumping)
+                {
+                    if (gamePad.Buttons.A == ButtonState.Pressed)
+                    {
+                        Jump();
+                    }
+                    else if (gamePad.ThumbSticks.Left.X < -0.5)
+                    {
+                        RunLeft();
+                    }
+                    else if (gamePad.ThumbSticks.Left.X > 0.5)
+                    {
+                        RunRight();
+                    }
+                    else
+                    {
+                        Stop();
+                    }
+                }
+                else
+                {
+                    AirMove(gamePad);
+                }
+            }
+
+            private void Stop()
+            {
+                player.motor.MotorSpeed = 0;
+                player.body.LinearVelocity = new Vector2(0, player.body.LinearVelocity.Y);
+                player.State = Character.CharState.Idle;
+            }
+
+            private void Jump()
+            {
+                player.launchSpeed = player.body.LinearVelocity.X;
+                player.body.ApplyLinearImpulse(player.jumpImpulse, player.body.Position);
+                player.State = Character.CharState.Jumping;
+            }
+
+            private void RunRight()
+            {
+                player.motor.MotorSpeed = player.runSpeed;
+                player.State = Character.CharState.Running;
+            }
+
+            private void RunLeft()
+            {
+                player.motor.MotorSpeed = -player.runSpeed;
+                player.State = Character.CharState.Running;
+            }
+
+            private void AirMove(KeyboardState keyboardState)
+            {
+                if ((keyboardState.IsKeyDown(Keys.Left) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.Right) && player.launchSpeed > 0))
+                {
+                    player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+                }
+                else if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.Left))
+                {
+                    player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+                }
+            }
+
+            private void AirMove(GamePadState gamePad)
+            {
+                if ((gamePad.ThumbSticks.Left.X < -0.5 && player.launchSpeed < 0) || (gamePad.ThumbSticks.Left.X > 0.5 && player.launchSpeed > 0))
+                {
+                    player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+                }
+                else if (gamePad.ThumbSticks.Left.X > 0.5 || gamePad.ThumbSticks.Left.X < -0.5)
+                {
+                    player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+                }
+            }
+
+            private void WallJumpLeft()
+            {
+                if (player.launchSpeed > 0)
+                {
+                    player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
+                    Jump();
+                }
+            }
+
+            private void WallJumpRight()
+            {
+                if (player.launchSpeed < 0)
+                {
+                    player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
+                    Jump();
+                }
+            }
         }
     }
 }
