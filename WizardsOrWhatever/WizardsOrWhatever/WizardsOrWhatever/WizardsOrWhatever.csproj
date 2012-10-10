@@ -123,6 +123,7 @@
     <Compile Include="ConvertUnits.cs" />
     <Compile Include="PhysicsObject.cs" />
     <Compile Include="Character.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Screen\BackgroundScreen.cs" />
@@ -135,9 +136,9 @@
     <Compile Include="Screen\OptionsMenuScreen.cs" />
     <Compile Include="Screen\PauseMenuScreen.cs" />
     <Compile Include="Screen\PlayerIndexEventArgs.cs" />
-    <Compile Include="Secreen Management\GameScreen.cs" />
-    <Compile Include="Secreen Management\InputState.cs" />
-    <Compile Include="Secreen Management\ScreenManager.cs" />
+    <Compile Include="Screen Management\GameScreen.cs" />
+    <Compile Include="Screen Management\InputState.cs" />
+    <Compile Include="Screen Management\ScreenManager.cs" />
     <Compile Include="StaticPhysicsObject.cs" />
   </ItemGroup>
   <ItemGroup>

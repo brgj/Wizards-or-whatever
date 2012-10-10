@@ -28,10 +28,10 @@ using FarseerPhysics;
 namespace WizardsOrWhatever
 {
     /// <summary>
-    /// Game State Management class.
+    /// Game class for managing states.
 	/// Switches between menu, loading, pause, and game screens.
     /// </summary>
-    public class GameStateManagementGame : Microsoft.Xna.Framework.Game
+    public class Game1 : Microsoft.Xna.Framework.Game
     {
         #region Fields
 
@@ -56,7 +56,7 @@ namespace WizardsOrWhatever
         /// <summary>
         /// The main game constructor.
         /// </summary>
-        public GameStateManagementGame()
+        public Game1()
         {
             Content.RootDirectory = "Content";
 
@@ -113,23 +113,4 @@ namespace WizardsOrWhatever
 
         #endregion
     }
-
-
-    #region Entry Point
-
-    /// <summary>
-    /// The main entry point for the application.
-    /// </summary>
-    static class Program
-    {
-        static void Main()
-        {
-            using (GameStateManagementGame game = new GameStateManagementGame())
-            {
-                game.Run();
-            }
-        }
-    }
-
-    #endregion
 }

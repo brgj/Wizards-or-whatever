@@ -30,14 +30,12 @@ using FarseerPhysics;
 namespace WizardsOrWhatever
 {
     /// <summary>
-    /// This screen implements the actual game logic. It is just a
-    /// placeholder to get the idea across: you'll probably want to
-    /// put some more interesting gameplay in here!
+    /// This screen implements the actual game logic.
     /// </summary>
     class GameplayScreen : GameScreen
     {
 
-        ContentManager content;
+        ContentManager Content;
         SpriteFont gameFont;
 
         // ------------------------------------
@@ -45,12 +43,13 @@ namespace WizardsOrWhatever
         // ------------------------------------
 
 
-        //int viewportHeight, viewportWidth;
-
+        //The world object that encapsulates all physics objects
         World world;
         MSTerrain terrain;
-        Camera camera;
 
+        //Camera object that follows the character
+        Camera2D camera;
+        //Game character controlled by user. TODO: Use a list for offline multiplayer
         CompositeCharacter player;
 
         //Walls. Placeholders for terrain.
@@ -59,21 +58,31 @@ namespace WizardsOrWhatever
         PhysicsObject rightWall;
         PhysicsObject ceiling;
 
+        //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
         List<PhysicsObject> paddles;
 
-        private Matrix projection, view;
+        //Debug View. For viewing all underlying physics components of game.
+        DebugViewXNA DebugView;
 
+        //Stores the last keyboard state
+        private KeyboardState lastKeyboardState;
 
-        // ------------------------------------9--
-        // ------------------------------------
+        //Used for measuring frames per second
+        private int fps = 0;
+        private int frames = 0;
+        private float frameTimer = 0f;
 
-        //Vector2 playerPosition = new Vector2(100, 100);
-        //Vector2 enemyPosition = new Vector2(100, 100);
+        //Font for displaying fps
+        SpriteFont font;
 
-        Random random = new Random();
-
+        //Variable for the alpha transparency on pause
         float pauseAlpha;
 
+        //TODO: Look into camera controls more
+        //TODO: get MSTerrain working properly
+        //The y pos is losing accuracy at some point during run time.
+        //Debug more and figure out the location
+        //Figure out debug mode and implement new terrain.
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -81,9 +90,6 @@ namespace WizardsOrWhatever
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
-
-            //viewportHeight = vpHeight;
-            //viewportWidth = vpWidth;
 
             world = new World(new Vector2(0, 9.8f));
 
@@ -96,58 +102,52 @@ namespace WizardsOrWhatever
                 Iterations = 2
             };
             terrain.Initialize();
-
-
-            // DebugView stuff
-            /*
-            Settings.EnableDiagnostics = true;
-            DebugView = new DebugViewXNA(world);
-            DebugView.LoadContent(GraphicsDevice, Content);
-            projection = Matrix.CreateOrthographic(
-                graphics.PreferredBackBufferWidth / 100.0f,
-                -graphics.PreferredBackBufferHeight / 100.0f, 0, 1000000);
-            Vector3 campos = new Vector3();
-            campos.X = (-graphics.PreferredBackBufferWidth / 2) / 100.0f;
-            campos.Y = (graphics.PreferredBackBufferHeight / 2) / -100.0f;
-            campos.Z = 0;
-            Matrix tran = Matrix.Identity;
-            tran.Translation = campos;
-            view = tran;
-             */
         }
 
 
         /// <summary>
-        /// Load graphics content for the game.
+        /// LoadContent will be called once per game and is the place to load
+        /// all of your content.
         /// </summary>
         public override void LoadContent()
         {
-            if (content == null)
-                content = new ContentManager(ScreenManager.Game.Services, "Content");
+            if (Content == null)
+                Content = new ContentManager(ScreenManager.Game.Services, "Content");
 
-            gameFont = content.Load<SpriteFont>("gamefont");
+            //DebugView Stuff
+            Settings.EnableDiagnostics = true;
+            DebugView = new DebugViewXNA(world);
+            DebugView.LoadContent(ScreenManager.GraphicsDevice, Content);
+
+            //Create camera using current viewport. Track a body without rotation.
+            camera = new Camera2D(ScreenManager.GraphicsDevice);
+            camera.EnablePositionTracking = true;
+            camera.EnableRotationTracking = false;
+
+            gameFont = Content.Load<SpriteFont>("gamefont");
 
             // ----------------------------------------------------------
+            Texture2D terrainTex = Content.Load<Texture2D>("Terrain");
+            terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width-10, -170), InsideTerrainTest);
 
-
-            // Create camera using current viewport
-            camera = new Camera(ScreenManager.GraphicsDevice.Viewport);
-
-            //terrain.ApplyTexture(Content.Load<Texture2D>("Terrain"), new Vector2(200, 0), InsideTerrainTest);
+            font = Content.Load<SpriteFont>("font");
 
             //Create player
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+
+            // Set camera to track player
+            camera.TrackingBody = player.body;
 
             //Create walls
             ground = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 12.5f),
-                content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
+                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
             //leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
             //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
             //rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
             //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
             ceiling = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, 12.5f),
-                content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
+                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
 
             //Instantiate a list of paddles to be used
             paddles = new List<PhysicsObject>();
@@ -155,7 +155,7 @@ namespace WizardsOrWhatever
             // Creates a simple paddle which center is anchored
             // in the background. It can rotate freely
             PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
-                content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, ConvertUnits.ToSimUnits(new Vector2(0, 0)),
                 ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f - 150, ScreenManager.GraphicsDevice.Viewport.Height - 300)));
@@ -166,7 +166,7 @@ namespace WizardsOrWhatever
             // it will rotate slowly but the motor is not set too strong that
             // it can push everything away
             PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280),
-                content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, ConvertUnits.ToSimUnits(new Vector2(-48, 0)),
                 ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280)));
@@ -181,7 +181,7 @@ namespace WizardsOrWhatever
             paddles.Add(motorPaddle);
 
             // Use two line joints (a sort of springs) to create a trampoline
-            PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+            PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
 
             var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
 
@@ -200,20 +200,14 @@ namespace WizardsOrWhatever
 
             paddles.Add(trampolinePaddle);
 
+            PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
 
-
-
-
+            paddles.Add(staticPaddle);
 
             // ----------------------------------------------------------
 
-
-
-
-            // A real game would probably have more content than this sample, so
-            // it would take longer to load. We simulate that by delaying for a
-            // while, giving you a chance to admire the beautiful loading screen.
-            Thread.Sleep(1000);
+            // Sleep for the loading screen
+            Thread.Sleep(500);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -223,11 +217,12 @@ namespace WizardsOrWhatever
 
 
         /// <summary>
-        /// Unload graphics content used by the game.
+        /// UnloadContent will be called once per game and is the place to unload
+        /// all content.
         /// </summary>
         public override void UnloadContent()
         {
-            content.Unload();
+            Content.Unload();
         }
 
 
@@ -256,6 +251,66 @@ namespace WizardsOrWhatever
             {
                 //Stores state of an xbox controller
                 GamePadState currentState = GamePad.GetState(PlayerIndex.One);
+                KeyboardState keyboardState = Keyboard.GetState();
+
+                //TODO: Remove this
+                if (keyboardState.IsKeyDown(Keys.X) && !lastKeyboardState.IsKeyDown(Keys.X) || currentState.Buttons.X == ButtonState.Pressed)
+                {
+                    DrawCircleOnMap(ConvertUnits.ToSimUnits(player.Position), 1);
+                    terrain.RegenerateTerrain();
+                }
+                if (keyboardState.IsKeyDown(Keys.F1) && !lastKeyboardState.IsKeyDown(Keys.F1))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.Shape);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F2) && !lastKeyboardState.IsKeyDown(Keys.F2))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.DebugPanel);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F3) && !lastKeyboardState.IsKeyDown(Keys.F3))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.PerformanceGraph);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F4) && !lastKeyboardState.IsKeyDown(Keys.F4))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.AABB);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F5) && !lastKeyboardState.IsKeyDown(Keys.F5))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.CenterOfMass);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F6) && !lastKeyboardState.IsKeyDown(Keys.F6))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.Joint);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F7) && !lastKeyboardState.IsKeyDown(Keys.F7))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.ContactPoints);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F8) && !lastKeyboardState.IsKeyDown(Keys.F8))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.ContactNormals);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F9) && !lastKeyboardState.IsKeyDown(Keys.F9))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.PolygonPoints);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F10) && !lastKeyboardState.IsKeyDown(Keys.F10))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.Pair);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F11) && !lastKeyboardState.IsKeyDown(Keys.F11))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.Controllers);
+                }
+                else if (keyboardState.IsKeyDown(Keys.F12) && !lastKeyboardState.IsKeyDown(Keys.F12))
+                {
+                    EnableOrDisableFlags(DebugViewFlags.Shape | DebugViewFlags.Joint
+                       | DebugViewFlags.AABB | DebugViewFlags.Pair | DebugViewFlags.CenterOfMass
+                       | DebugViewFlags.DebugPanel | DebugViewFlags.ContactPoints
+                       | DebugViewFlags.ContactNormals | DebugViewFlags.PolygonPoints
+                       | DebugViewFlags.PerformanceGraph | DebugViewFlags.Controllers);
+                }
 
                 if (currentState.IsConnected)
                 {
@@ -267,11 +322,13 @@ namespace WizardsOrWhatever
                 }
 
                 player.Update(gameTime);
-                camera.Update(player);
+                camera.Update(gameTime);
 
                 //Notifies the world that time has progressed.
                 //Collision detection, integration, and constraint solution are performed
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
+
+                lastKeyboardState = keyboardState;
             }
         }
 
@@ -337,16 +394,30 @@ namespace WizardsOrWhatever
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
+            frames++;
+            frameTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            if (frameTimer > 1000)
+            {
+                fps = frames;
+                frameTimer = 0f;
+                frames = 0;
+            }
+
             // This game has a blue background. Why? Because!
             ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
                                                Color.CornflowerBlue, 0, 0);
 
+            Matrix proj = camera.SimProjection;
+            Matrix view = camera.SimView;
+            DebugView.RenderDebugData(ref proj, ref view);
             
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
 
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.transform);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.View);
 
+            // Draw the fps to screen
+            spriteBatch.DrawString(font, "fps: " + fps, camera.Position - new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2 - 10, ScreenManager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
             ground.Draw(spriteBatch);
             //leftWall.Draw(spriteBatch);
             //rightWall.Draw(spriteBatch);
@@ -367,6 +438,40 @@ namespace WizardsOrWhatever
                 float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, pauseAlpha / 2);
 
                 ScreenManager.FadeBackBufferToBlack(alpha);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="color"></param>
+        /// <returns></returns>
+        private bool InsideTerrainTest(Color color)
+        {
+            return color == Color.Black;
+        }
+
+        private void EnableOrDisableFlags(DebugViewFlags flags)
+        {
+            if ((DebugView.Flags & flags) != 0)
+                DebugView.RemoveFlags(flags);
+            else
+                DebugView.AppendFlags(flags);
+        }
+
+        private void DrawCircleOnMap(Vector2 center, sbyte value)
+        {
+            for (float by = -2.5f; by < 2.5f; by += 0.1f)
+            {
+                for (float bx = -2.5f; bx < 2.5f; bx += 0.1f)
+                {
+                    if ((bx * bx) + (by * by) < 2.5f * 2.5f)
+                    {
+                        float ax = bx + center.X;
+                        float ay = by + center.Y;
+                        terrain.ModifyTerrain(new Vector2(ax, ay), value);
+                    }
+                }
             }
         }
 

@@ -24,7 +24,7 @@ namespace WizardsOrWhatever
             Right
         }
 
-        public Vector2 jumpImpulse = new Vector2(0, -15);
+        public Vector2 jumpImpulse = new Vector2(0, -5);
         public float launchSpeed;
         protected CharState state = CharState.Idle;
         protected CharState prevState;
