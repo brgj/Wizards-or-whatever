@@ -83,9 +83,9 @@ namespace FarseerPhysics.DebugViews
             world.ContactManager.PreSolve += PreSolve;
 
             //Default flags
-            AppendFlags(DebugViewFlags.Shape);
-            AppendFlags(DebugViewFlags.Controllers);
-            AppendFlags(DebugViewFlags.Joint);
+            //AppendFlags(DebugViewFlags.Shape);
+            //AppendFlags(DebugViewFlags.Controllers);
+            //AppendFlags(DebugViewFlags.Joint);
         }
 
         public void BeginCustomDraw(ref Matrix projection, ref Matrix view)
@@ -832,7 +832,7 @@ namespace FarseerPhysics.DebugViews
             _device = device;
             _batch = new SpriteBatch(_device);
             _primitiveBatch = new PrimitiveBatch(_device, 1000);
-            //_font = content.Load<SpriteFont>("font");
+            _font = content.Load<SpriteFont>("font");
             _stringData = new List<StringData>();
 
             _localProjection = Matrix.CreateOrthographicOffCenter(0f, _device.Viewport.Width, _device.Viewport.Height,

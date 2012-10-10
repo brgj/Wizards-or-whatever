@@ -96,7 +96,7 @@ namespace WizardsOrWhatever
             body.BodyType = BodyType.Dynamic;
             body.Restitution = 0.1f;
             body.Friction = 0.5f;
-            body.Position = ConvertUnits.ToSimUnits(position);// -(Vector2.UnitY * (size.X / 4));
+            body.Position = ConvertUnits.ToSimUnits(position) - (Vector2.UnitY * (size.X / 4));
 
             centerOffset = position.Y - (float)ConvertUnits.ToDisplayUnits(body.Position.Y);
 
@@ -104,7 +104,7 @@ namespace WizardsOrWhatever
 
             // Create lower body
             wheel = BodyFactory.CreateCircle(world, (float)size.X / 2, mass / 2);
-            wheel.Position = body.Position + Vector2.UnitY * (upperBodyHeight / 2);
+            wheel.Position = body.Position + (Vector2.UnitY * (upperBodyHeight / 2));
             wheel.BodyType = BodyType.Dynamic;
             wheel.Restitution = 0.1f;
 
@@ -218,7 +218,7 @@ namespace WizardsOrWhatever
         {
             Vector2 scale = new Vector2(Size.X / (float)texWidth, Size.Y / (float)texHeight);
             //spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)ConvertUnits.ToDisplayUnits(size.X), (int)ConvertUnits.ToDisplayUnits(size.Y)), null, Color.White, wheel.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), Color.White, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f) - 10f), scale, SpriteEffects.None, 0);
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), Color.White, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f)-10f), scale, SpriteEffects.None, 0);
         }
 
         public void move(GamePadState gamePad)
@@ -280,7 +280,11 @@ namespace WizardsOrWhatever
 
             public void GamePadInput(GamePadState gamePad)
             {
-                
+                int oldRunSpeed = player.runSpeed;
+                if (gamePad.Triggers.Right > 0.5)
+                {
+                    player.runSpeed *= 3;
+                }
 
                 if (player.State == Character.CharState.Wallslide)
                 {
@@ -316,6 +320,7 @@ namespace WizardsOrWhatever
                 {
                     AirMove(gamePad);
                 }
+                player.runSpeed = oldRunSpeed;
             }
 
             private void Stop()

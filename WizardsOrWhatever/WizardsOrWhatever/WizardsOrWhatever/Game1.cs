@@ -28,10 +28,8 @@ using FarseerPhysics;
 namespace WizardsOrWhatever
 {
     /// <summary>
-    /// Sample showing how to manage different game states, with transitions
-    /// between menu screens, a loading screen, the game itself, and a pause
-    /// menu. This main game class is extremely simple: all the interesting
-    /// stuff happens in the ScreenManager component.
+    /// Game State Management class.
+	/// Switches between menu, loading, pause, and game screens.
     /// </summary>
     public class GameStateManagementGame : Microsoft.Xna.Framework.Game
     {

@@ -101,6 +101,8 @@
     </Compile>
     <Compile Include="menufont.spritefont">
       <Name>menufont</Name>
+    <Compile Include="font.spritefont">
+      <Name>font</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
     </Compile>
