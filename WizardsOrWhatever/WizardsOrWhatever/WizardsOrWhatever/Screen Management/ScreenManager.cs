@@ -36,6 +36,7 @@ namespace WizardsOrWhatever
 
         SpriteBatch spriteBatch;
         SpriteFont font;
+        SpriteFont titleFont;
         Texture2D blankTexture;
 
         bool isInitialized;
@@ -66,6 +67,13 @@ namespace WizardsOrWhatever
             get { return font; }
         }
 
+        /// <summary>
+        /// Title Font for the main screen.
+        /// </summary>
+        public SpriteFont TitleFont
+        {
+            get { return titleFont; }
+        }
 
         /// <summary>
         /// If true, the manager prints out a list of all the screens
@@ -116,7 +124,8 @@ namespace WizardsOrWhatever
             ContentManager content = Game.Content;
 
             spriteBatch = new SpriteBatch(GraphicsDevice);
-            font = content.Load<SpriteFont>("gamefont");
+            font = content.Load<SpriteFont>("mainMenuFont");
+            titleFont = content.Load<SpriteFont>("gamefont");
             blankTexture = content.Load<Texture2D>("blank");
 
             // Tell each of the screens to load their content.
