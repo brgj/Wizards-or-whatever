@@ -38,11 +38,6 @@ namespace WizardsOrWhatever
         ContentManager Content;
         SpriteFont gameFont;
 
-        // ------------------------------------
-        // ----------- Game1 stuffs -----------
-        // ------------------------------------
-
-
         //The world object that encapsulates all physics objects
         World world;
         MSTerrain terrain;

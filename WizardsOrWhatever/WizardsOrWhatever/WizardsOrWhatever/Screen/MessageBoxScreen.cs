@@ -22,19 +22,12 @@ namespace WizardsOrWhatever
     /// </summary>
     class MessageBoxScreen : GameScreen
     {
-        #region Fields
 
         string message;
         Texture2D gradientTexture;
 
-        #endregion
-
-        #region Events
-
         public event EventHandler<PlayerIndexEventArgs> Accepted;
         public event EventHandler<PlayerIndexEventArgs> Cancelled;
-
-        #endregion
 
         #region Initialization
 
@@ -54,7 +47,7 @@ namespace WizardsOrWhatever
         /// </summary>
         public MessageBoxScreen(string message, bool includeUsageText)
         {
-            const string usageText = "\nA button, Space, Enter = ok" +
+            const string usageText = "\nA button, Enter = ok" +
                                      "\nB button, Esc = cancel"; 
             
             if (includeUsageText)

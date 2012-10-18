@@ -30,10 +30,6 @@ namespace WizardsOrWhatever
         int selectedEntry = 0;
         string menuTitle;
 
-        #endregion
-
-        #region Properties
-
 
         /// <summary>
         /// Gets the list of menu entries, so derived classes can add
@@ -47,9 +43,6 @@ namespace WizardsOrWhatever
 
         #endregion
 
-        #region Initialization
-
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -60,9 +53,6 @@ namespace WizardsOrWhatever
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
-
-
-        #endregion
 
         #region Handle Input
 
