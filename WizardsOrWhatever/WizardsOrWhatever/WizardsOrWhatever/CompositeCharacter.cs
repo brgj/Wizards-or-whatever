@@ -14,7 +14,7 @@ using FarseerPhysics.Factories;
 
 namespace WizardsOrWhatever
 {
-    class CompositeCharacter : Character
+    public class CompositeCharacter : Character
     {
         public Body wheel;
         public FixedAngleJoint fixedAngleJoint;
@@ -29,6 +29,7 @@ namespace WizardsOrWhatever
         protected float spriteTimer = 0f;
         protected float spriteInterval = 100f;
         Input input;
+        double elapsedTime;
 
         int SpriteX
         {
@@ -175,6 +176,38 @@ namespace WizardsOrWhatever
                 UpdateSprite();
                 spriteTimer = 0f;
             }
+
+            //TESTING HEALTHBAR AND MANA INPUT
+            KeyboardState mKeys = Keyboard.GetState();
+            if (Mana < maxMana)
+            {
+                elapsedTime += gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (elapsedTime >= 50)
+                {
+                    Mana += 1;
+                    elapsedTime -= 50;
+                }
+            }
+            if (mKeys.IsKeyDown(Keys.OemPlus) == true)
+            {
+                Health += 10;
+            }
+            if (mKeys.IsKeyDown(Keys.OemMinus) == true)
+            {
+                Health -= 10;
+            }
+            Health = (int)MathHelper.Clamp(Health, 0, 1000);
+
+            if (mKeys.IsKeyDown(Keys.OemPlus) == true)
+            {
+                Mana += 1;
+            }
+            if (mKeys.IsKeyDown(Keys.OemMinus) == true)
+            {
+                Mana -= 1;
+            }
+            Mana = (int)MathHelper.Clamp(Mana, 0, 100);
+            //END TESTING
         }
 
         private void UpdateSprite()

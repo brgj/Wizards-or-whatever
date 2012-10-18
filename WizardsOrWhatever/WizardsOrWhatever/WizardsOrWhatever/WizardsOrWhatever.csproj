@@ -124,10 +124,12 @@
     <Compile Include="PhysicsObject.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Projectile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="Screen\BackgroundScreen.cs" />
     <Compile Include="Screen\GameplayScreen.cs" />
+    <Compile Include="Screen\HUD.cs" />
     <Compile Include="Screen\LoadingScreen.cs" />
     <Compile Include="Screen\LobbyScreen.cs" />
     <Compile Include="Screen\MainMenuScreen.cs" />

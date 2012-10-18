@@ -44,14 +44,18 @@ namespace WizardsOrWhatever
 
         //Camera object that follows the character
         Camera2D camera;
-        //Game character controlled by user. TODO: Use a list for offline multiplayer
+        //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
         CompositeCharacter player;
+        HUD playerHUD;
 
         //Walls. Placeholders for terrain.
         PhysicsObject ground;
         PhysicsObject leftWall;
         PhysicsObject rightWall;
         PhysicsObject ceiling;
+
+        //Projectiles
+        List<Projectile> projectiles = new List<Projectile>();
 
         //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
         List<PhysicsObject> paddles;
@@ -130,6 +134,10 @@ namespace WizardsOrWhatever
             //Create player
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+
+            //Create HUD
+            playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
+            ScreenManager.Game.Components.Add(playerHUD);
 
             // Set camera to track player
             camera.TrackingBody = player.body;
@@ -217,11 +225,9 @@ namespace WizardsOrWhatever
         /// </summary>
         public override void UnloadContent()
         {
+            ScreenManager.Game.Components.Remove(playerHUD);
             Content.Unload();
         }
-
-
-        
 
         #region Update and Draw
 
@@ -326,7 +332,6 @@ namespace WizardsOrWhatever
                 lastKeyboardState = keyboardState;
             }
         }
-
 
         /// <summary>
         /// Lets the game respond to player input. Unlike the Update method,
