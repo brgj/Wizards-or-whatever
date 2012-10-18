@@ -9,6 +9,7 @@
 
 #region Using Statements
 using Microsoft.Xna.Framework;
+using WizardsOrWhatever.Screen;
 #endregion
 
 namespace WizardsOrWhatever
@@ -33,16 +34,19 @@ namespace WizardsOrWhatever
 
             // Create our menu entries.
             MenuEntry playGameMenuEntry = new MenuEntry("Play Game");
+            MenuEntry multiplayerEntry = new MenuEntry("Multiplayer Mode");
             MenuEntry optionsMenuEntry = new MenuEntry("Options");
             MenuEntry exitMenuEntry = new MenuEntry("Exit");
 
             // Hook up menu event handlers.
             playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
+            multiplayerEntry.Selected += MultiplayerEntrSelected;
             optionsMenuEntry.Selected += OptionsMenuEntrySelected;
             exitMenuEntry.Selected += OnCancel;
 
             // Add entries to the menu.
             MenuEntries.Add(playGameMenuEntry);
+            MenuEntries.Add(multiplayerEntry);
             MenuEntries.Add(optionsMenuEntry);
             MenuEntries.Add(exitMenuEntry);
         }
@@ -52,7 +56,13 @@ namespace WizardsOrWhatever
 
         #region Handle Input
 
-
+        /// <summary>
+        /// Event handler for when the multiplayer entry is selected.
+        /// </summary>
+        void MultiplayerEntrSelected(object sender, PlayerIndexEventArgs e)
+        {
+            ScreenManager.AddScreen(new LobbyScreen(), e.PlayerIndex);
+        }
         /// <summary>
         /// Event handler for when the Play Game menu entry is selected.
         /// </summary>
