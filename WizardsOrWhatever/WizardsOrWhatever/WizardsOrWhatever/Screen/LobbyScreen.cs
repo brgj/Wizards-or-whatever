@@ -13,9 +13,14 @@ namespace WizardsOrWhatever.Screen
         {
             MenuEntry joingame = new MenuEntry("Join a game");
             MenuEntry back = new MenuEntry("Back");
+            joingame.Selected += JoinGameSelected;
             MenuEntries.Add(joingame);
             MenuEntries.Add(back);
             back.Selected += OnCancel;
+        }
+        void JoinGameSelected(object sender, PlayerIndexEventArgs e)
+        {
+            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, new GameplayScreenMulti());
         }
     }
 }
