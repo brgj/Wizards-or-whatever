@@ -2,7 +2,7 @@ Wizards-or-whatever
 ===================
 
 ### Game project for COMP 3903
-
+-----------
 # Please refer to this section if you have commit issues
 -----------
 1. Go here and follow Windows instructions for **P4Merge: Visual Merge Tool**: http://www.perforce.com/downloads/complete_list
