@@ -15,18 +15,12 @@ namespace WizardsOrWhatever
 
         private Vector2 _currentPosition;
 
-        private float _currentRotation;
-
         private float _currentZoom;
         private Vector2 _maxPosition;
-        private float _maxRotation;
         private Vector2 _minPosition;
-        private float _minRotation;
         private bool _positionTracking;
         private Matrix _projection;
-        private bool _rotationTracking;
         private Vector2 _targetPosition;
-        private float _targetRotation;
         private Body _trackingBody;
         private Vector2 _translateCenter;
         private Matrix _view;
@@ -104,43 +98,7 @@ namespace WizardsOrWhatever
         }
 
         /// <summary>
-        /// The current rotation of the camera in radians.
-        /// </summary>
-        public float Rotation
-        {
-            get { return _currentRotation; }
-            set
-            {
-                _targetRotation = value % MathHelper.TwoPi;
-                if (_minRotation != _maxRotation)
-                {
-                    _targetRotation = MathHelper.Clamp(_targetRotation, _minRotation, _maxRotation);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the minimum rotation in radians.
-        /// </summary>
-        /// <value>The min rotation.</value>
-        public float MinRotation
-        {
-            get { return _minRotation; }
-            set { _minRotation = MathHelper.Clamp(value, -MathHelper.Pi, 0f); }
-        }
-
-        /// <summary>
-        /// Gets or sets the maximum rotation in radians.
-        /// </summary>
-        /// <value>The max rotation.</value>
-        public float MaxRotation
-        {
-            get { return _maxRotation; }
-            set { _maxRotation = MathHelper.Clamp(value, 0f, MathHelper.Pi); }
-        }
-
-        /// <summary>
-        /// The current rotation of the camera in radians.
+        /// The current zoom of the camera.
         /// </summary>
         public float Zoom
         {
@@ -185,28 +143,11 @@ namespace WizardsOrWhatever
             }
         }
 
-        public bool EnableRotationTracking
-        {
-            get { return _rotationTracking; }
-            set
-            {
-                if (value && _trackingBody != null)
-                {
-                    _rotationTracking = true;
-                }
-                else
-                {
-                    _rotationTracking = false;
-                }
-            }
-        }
-
         public bool EnableTracking
         {
             set
             {
                 EnablePositionTracking = value;
-                EnableRotationTracking = value;
             }
         }
 
@@ -219,19 +160,6 @@ namespace WizardsOrWhatever
             }
             _targetPosition = _currentPosition;
             _positionTracking = false;
-            _rotationTracking = false;
-        }
-
-        public void RotateCamera(float amount)
-        {
-            _currentRotation += amount;
-            if (_minRotation != _maxRotation)
-            {
-                _currentRotation = MathHelper.Clamp(_currentRotation, _minRotation, _maxRotation);
-            }
-            _targetRotation = _currentRotation;
-            _positionTracking = false;
-            _rotationTracking = false;
         }
 
         /// <summary>
@@ -244,13 +172,7 @@ namespace WizardsOrWhatever
             _minPosition = Vector2.Zero;
             _maxPosition = Vector2.Zero;
 
-            _currentRotation = 0f;
-            _targetRotation = 0f;
-            _minRotation = -MathHelper.Pi;
-            _maxRotation = MathHelper.Pi;
-
             _positionTracking = false;
-            _rotationTracking = false;
 
             _currentZoom = 1f;
 
@@ -260,20 +182,17 @@ namespace WizardsOrWhatever
         public void Jump2Target()
         {
             _currentPosition = _targetPosition;
-            _currentRotation = _targetRotation;
 
             SetView();
         }
 
         private void SetView()
         {
-            Matrix matRotation = Matrix.CreateRotationZ(_currentRotation);
             Matrix matZoom = Matrix.CreateScale(_currentZoom);
             Vector3 translateCenter = new Vector3(_translateCenter, 0f);
             Vector3 translateBody = new Vector3(-_currentPosition, 0f);
 
             _view = Matrix.CreateTranslation(translateBody) *
-                    matRotation *
                     matZoom *
                     Matrix.CreateTranslation(translateCenter);
 
@@ -281,7 +200,6 @@ namespace WizardsOrWhatever
             translateBody = ConvertUnits.ToDisplayUnits(translateBody);
 
             _batchView = Matrix.CreateTranslation(translateBody) *
-                         matRotation *
                          matZoom *
                          Matrix.CreateTranslation(translateCenter);
         }
@@ -301,14 +219,6 @@ namespace WizardsOrWhatever
                         Vector2.Clamp(ref _targetPosition, ref _minPosition, ref _maxPosition, out _targetPosition);
                     }
                 }
-                if (_rotationTracking)
-                {
-                    _targetRotation = -_trackingBody.Rotation % MathHelper.TwoPi;
-                    if (_minRotation != _maxRotation)
-                    {
-                        _targetRotation = MathHelper.Clamp(_targetRotation, _minRotation, _maxRotation);
-                    }
-                }
             }
             Vector2 delta = _targetPosition - _currentPosition;
             float distance = delta.Length();
@@ -325,25 +235,8 @@ namespace WizardsOrWhatever
             {
                 inertia = 1f;
             }
-
-            float rotDelta = _targetRotation - _currentRotation;
-
-            float rotInertia;
-            if (Math.Abs(rotDelta) < 5f)
-            {
-                rotInertia = (float)Math.Pow(rotDelta / 5.0, 2.0);
-            }
-            else
-            {
-                rotInertia = 1f;
-            }
-            if (Math.Abs(rotDelta) > 0f)
-            {
-                rotDelta /= Math.Abs(rotDelta);
-            }
-
-            _currentPosition += 100f * delta * inertia * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            _currentRotation += 80f * rotDelta * rotInertia * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            //_currentPosition += 100f * delta * inertia * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            _currentPosition = _targetPosition;
 
             SetView();
         }

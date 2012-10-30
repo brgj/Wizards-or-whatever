@@ -123,7 +123,6 @@ namespace WizardsOrWhatever
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
             camera.EnablePositionTracking = true;
-            camera.EnableRotationTracking = false;
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
@@ -234,6 +233,7 @@ namespace WizardsOrWhatever
         #region Update and Draw
 
 
+        //TODO: Move the Update and HandleInput methods together
         /// <summary>
         /// Updates the state of the game. This method checks the GameScreen.IsActive
         /// property, so the game will stop updating when the pause menu is active,
@@ -367,33 +367,6 @@ namespace WizardsOrWhatever
             {
                 ScreenManager.AddScreen(new PauseMenuScreen(), ControllingPlayer);
             }
-            //else
-            //{
-            //    // Otherwise move the player position.
-            //    Vector2 movement = Vector2.Zero;
-
-            //    if (keyboardState.IsKeyDown(Keys.Left))
-            //        movement.X--;
-
-            //    if (keyboardState.IsKeyDown(Keys.Right))
-            //        movement.X++;
-
-            //    if (keyboardState.IsKeyDown(Keys.Up))
-            //        movement.Y--;
-
-            //    if (keyboardState.IsKeyDown(Keys.Down))
-            //        movement.Y++;
-
-            //    Vector2 thumbstick = gamePadState.ThumbSticks.Left;
-
-            //    movement.X += thumbstick.X;
-            //    movement.Y -= thumbstick.Y;
-
-            //    if (movement.Length() > 1)
-            //        movement.Normalize();
-
-            //    playerPosition += movement * 2;
-            //}
         }
 
 
