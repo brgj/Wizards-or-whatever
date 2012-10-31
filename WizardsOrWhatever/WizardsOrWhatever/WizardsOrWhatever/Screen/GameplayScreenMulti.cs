@@ -71,6 +71,8 @@ namespace WizardsOrWhatever.Screen
         //Variable for the alpha transparency on pause
         float pauseAlpha;
 
+
+
         //TODO: Look into camera controls more
         //TODO: get MSTerrain working properly
         //The y pos is losing accuracy at some point during run time.
@@ -134,15 +136,21 @@ namespace WizardsOrWhatever.Screen
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
-            // ----------------------------------------------------------
+
             Texture2D terrainTex = Content.Load<Texture2D>("Terrain");
             terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width - 10, -170), InsideTerrainTest);
 
             font = Content.Load<SpriteFont>("font");
 
-            //Create player
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
+            // ESS LOOK HERE!
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
@@ -567,7 +575,7 @@ namespace WizardsOrWhatever.Screen
                     if (player2 == null)
                     {
                         player2 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
                         writeStream.Position = 0;
                         writer.Write((byte)Protocol.Connected);
                         SendData(GetDataFromMemoryStream(writeStream));

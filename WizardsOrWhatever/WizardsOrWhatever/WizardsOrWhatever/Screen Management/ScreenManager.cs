@@ -38,6 +38,7 @@ namespace WizardsOrWhatever
         SpriteFont font;
         SpriteFont titleFont;
         Texture2D blankTexture;
+        Color characterColor;
 
         bool isInitialized;
 
@@ -46,6 +47,7 @@ namespace WizardsOrWhatever
         #endregion
 
         #region Properties
+
 
 
         /// <summary>
@@ -84,6 +86,12 @@ namespace WizardsOrWhatever
         {
             get { return traceEnabled; }
             set { traceEnabled = value; }
+        }
+
+        public Color CharacterColor
+        {
+            get { return characterColor; }
+            set { characterColor = value; }
         }
 
 

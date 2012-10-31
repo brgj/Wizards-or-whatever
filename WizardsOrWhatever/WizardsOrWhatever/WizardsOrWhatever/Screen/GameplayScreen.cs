@@ -77,6 +77,8 @@ namespace WizardsOrWhatever
         //Variable for the alpha transparency on pause
         float pauseAlpha;
 
+
+
         //TODO: Look into camera controls more
         //TODO: get MSTerrain working properly
         //The y pos is losing accuracy at some point during run time.
@@ -131,9 +133,9 @@ namespace WizardsOrWhatever
 
             font = Content.Load<SpriteFont>("font");
 
-            //Create player
+            
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);

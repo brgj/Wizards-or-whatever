@@ -129,6 +129,7 @@
     <Compile Include="Game1.cs" />
     <Compile Include="Protocols.cs" />
     <Compile Include="Screen\BackgroundScreen.cs" />
+    <Compile Include="Screen\CharacterColorScreen.cs" />
     <Compile Include="Screen\GameplayScreen.cs" />
     <Compile Include="Screen\GameplayScreenMulti.cs" />
     <Compile Include="Screen\HUD.cs" />

@@ -16,6 +16,7 @@ namespace WizardsOrWhatever
 {
     public class CompositeCharacter : Character
     {
+        #region Fields
         public Body wheel;
         public FixedAngleJoint fixedAngleJoint;
         public RevoluteJoint motor;
@@ -30,6 +31,14 @@ namespace WizardsOrWhatever
         protected float spriteInterval = 100f;
         Input input;
         double elapsedTime;
+        private Color charColor;
+
+        Color CharacterColor
+        {
+            get { return charColor; }
+            set { charColor = value; }
+        }
+
 
         int SpriteX
         {
@@ -55,6 +64,7 @@ namespace WizardsOrWhatever
                 spriteY = value;
             }
         }
+        #endregion
 
         /// <summary>
         /// Class for creating a character with a wheel used to move and a body
@@ -63,7 +73,7 @@ namespace WizardsOrWhatever
         /// <param name="position">The position in the world that the character is being added to</param>
         /// <param name="texture">The texture that is being used for the character</param>
         /// <param name="size">The size of the texture</param>
-        public CompositeCharacter(World world, Vector2 position, Texture2D texture, Vector2 size)
+        public CompositeCharacter(World world, Vector2 position, Texture2D texture, Vector2 size, Color characterColor)
             : base(world, position, texture, size)
         {
             if (size.X > size.Y)
@@ -71,6 +81,15 @@ namespace WizardsOrWhatever
                 throw new Exception("Cannot make character with width > height");
             }
 
+
+            if (characterColor != null)
+            {
+                CharacterColor = characterColor;
+            }
+            else
+            {
+                CharacterColor = Color.White;
+            }
             input = new Input(this);
             texWidth = (int)size.X;
             texHeight = (int)size.Y;
@@ -251,7 +270,8 @@ namespace WizardsOrWhatever
         {
             Vector2 scale = new Vector2(Size.X / (float)texWidth, Size.Y / (float)texHeight);
             //spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)ConvertUnits.ToDisplayUnits(size.X), (int)ConvertUnits.ToDisplayUnits(size.Y)), null, Color.White, wheel.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), Color.White, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f)-10f), scale, SpriteEffects.None, 0);
+
+            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), CharacterColor, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f)-10f), scale, SpriteEffects.None , 0);
         }
 
         public void move(GamePadState gamePad)
@@ -263,7 +283,6 @@ namespace WizardsOrWhatever
             input.KeyboardInput();
         }
 
-        //
         private class Input
         {
             CompositeCharacter player;

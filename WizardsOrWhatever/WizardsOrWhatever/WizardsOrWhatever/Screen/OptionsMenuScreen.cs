@@ -23,6 +23,7 @@ namespace WizardsOrWhatever
         #region Fields
 
         MenuEntry ungulateMenuEntry;
+        MenuEntry chooseColorMenuEntry;
         MenuEntry languageMenuEntry;
         MenuEntry frobnicateMenuEntry;
         MenuEntry elfMenuEntry;
@@ -55,6 +56,7 @@ namespace WizardsOrWhatever
             : base("Options")
         {
             // Create our menu entries.
+            chooseColorMenuEntry = new MenuEntry("Change Character Color");
             ungulateMenuEntry = new MenuEntry(string.Empty);
             languageMenuEntry = new MenuEntry(string.Empty);
             frobnicateMenuEntry = new MenuEntry(string.Empty);
@@ -65,6 +67,7 @@ namespace WizardsOrWhatever
             MenuEntry back = new MenuEntry("Back");
 
             // Hook up menu event handlers.
+            chooseColorMenuEntry.Selected += ChooseCharacterMenuEntrySelected;
             ungulateMenuEntry.Selected += UngulateMenuEntrySelected;
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
             frobnicateMenuEntry.Selected += FrobnicateMenuEntrySelected;
@@ -72,6 +75,7 @@ namespace WizardsOrWhatever
             back.Selected += OnCancel;
             
             // Add entries to the menu.
+            MenuEntries.Add(chooseColorMenuEntry);
             MenuEntries.Add(ungulateMenuEntry);
             MenuEntries.Add(languageMenuEntry);
             MenuEntries.Add(frobnicateMenuEntry);
@@ -95,6 +99,14 @@ namespace WizardsOrWhatever
         #endregion
 
         #region Handle Input
+
+        /// <summary>
+        /// Event handler for when the ChooseCharacterColor menu entry is selected.
+        /// </summary>
+        void ChooseCharacterMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+            ScreenManager.AddScreen(new CharacterColorScreen(), e.PlayerIndex);
+        }
 
 
         /// <summary>
