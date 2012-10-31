@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using FarseerPhysics.Dynamics;
@@ -9,11 +10,6 @@ using FarseerPhysics.Common.Decomposition;
 
 namespace WizardsOrWhatever
 {
-
-    /// <summary>
-    /// Return true if the specified color is inside the terrain.
-    /// </summary>
-    public delegate bool TerrainTester(Color color);
 
     /// <summary>
     /// Simple class to maintain a terrain.
@@ -71,6 +67,11 @@ namespace WizardsOrWhatever
         /// </summary>
         private List<Body>[,] _bodyMap;
 
+        /// <summary>
+        /// Texture broken into colours
+        /// </summary>
+        private Color[] colorData;
+
         private float _localWidth;
         private float _localHeight;
         private int _xnum;
@@ -116,27 +117,83 @@ namespace WizardsOrWhatever
             _dirtyArea = new AABB(new Vector2(float.MaxValue, float.MaxValue), new Vector2(float.MinValue, float.MinValue));
         }
 
-        /// <summary>
-        /// Apply a texture to the terrain using the specified TerrainTester.
-        /// </summary>
-        /// <param name="texture">Texture to apply.</param>
-        /// <param name="position">Top left position of the texture relative to the terrain.</param>
-        /// <param name="tester">Delegate method used to determine what colors should be included in the terrain.</param>
-        public void ApplyTexture(Texture2D texture, Vector2 position, TerrainTester tester)
+        public int[] RandomizeTerrain()
         {
-            Color[] colorData = new Color[texture.Width * texture.Height];
+            int[] terrainContour = new int[(int)ConvertUnits.ToDisplayUnits(Width)];
+            Random randomizer = new Random();
+            double rand1 = randomizer.NextDouble() + 1;
+            double rand2 = randomizer.NextDouble() + 2;
+            double rand3 = randomizer.NextDouble() + 3;
 
-            texture.GetData(colorData);
+            //TODO: probably want to change offset to half screen height
+            float offset = ConvertUnits.ToDisplayUnits(Height) / 2;
+            float peakHeight = ConvertUnits.ToDisplayUnits(Height);
+            float flatness = 70;
 
-            for (int y = (int)position.Y; y < texture.Height + (int)position.Y; y++)
+            for (int x = 0; x < (int)ConvertUnits.ToDisplayUnits(Width); x++)
             {
-                for (int x = (int)position.X; x < texture.Width + (int)position.X; x++)
+                double height = peakHeight / rand1 * Math.Sin((float)x / flatness * rand1 + rand1);
+                height += peakHeight / rand2 * Math.Sin((float)x / flatness * rand2 + rand2);
+                height += peakHeight / rand3 * Math.Sin((float)x / flatness * rand3 + rand3);
+                height += offset;
+                terrainContour[x] = (int)height;
+            }
+            return terrainContour;
+        }
+
+        /// <summary>
+        /// Creates a random color array for texture and applies it to the terrain
+        /// </summary>
+        /// <param name="texture"></param>
+        public void CreateRandomTerrain(Texture2D texture, Vector2 position)
+        {
+            int[] terrainContour = RandomizeTerrain();
+            Color[,] groundColors = TextureTo2DArray(texture);
+            int width = (int)ConvertUnits.ToDisplayUnits(Width);
+            int height = (int)ConvertUnits.ToDisplayUnits(Height);
+            colorData = new Color[width * height];
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (y > terrainContour[x])
+                    {
+                        colorData[x + y * width] = groundColors[x % texture.Width, y % texture.Height];
+                    }
+                    else
+                    {
+                        colorData[x + y * width] = Color.Transparent;
+                    }
+                }
+            }
+        }
+
+        public static Color[,] TextureTo2DArray(Texture2D texture)
+        {
+            Color[] colors1D = new Color[texture.Width * texture.Height];
+            texture.GetData(colors1D);
+            Color[,] colors2D = new Color[texture.Width, texture.Height];
+            for (int x = 0; x < texture.Width; x++)
+            {
+                for (int y = 0; y < texture.Height; y++)
+                {
+                    colors2D[x, y] = colors1D[x + y * texture.Width];
+                }
+            }
+            return colors2D;
+        }
+
+        //TODO: Look over
+        private void Apply(Vector2 position)
+        {
+            for (int y = (int)position.Y; y < ConvertUnits.ToDisplayUnits(Height) + (int)position.Y; y++)
+            {
+                for (int x = (int)position.X; x < ConvertUnits.ToDisplayUnits(Width) + (int)position.X; x++)
                 {
                     if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
                     {
-                        bool inside = tester(colorData[((y - (int)position.Y) * texture.Width) + (x - (int)position.X)]);
-
-                        if (!inside)
+                        if (colorData[((y - (int)position.Y) * (int)ConvertUnits.ToDisplayUnits(Width)) + (x - (int)position.X)].A > 0)
                             _terrainMap[x, y] = 1;
                         else
                             _terrainMap[x, y] = -1;
@@ -167,7 +224,55 @@ namespace WizardsOrWhatever
         }
 
         /// <summary>
-        /// Apply a texture to the terrain using the specified TerrainTester.
+        /// Apply a texture to the terrain.
+        /// </summary>
+        /// <param name="texture">Texture to apply.</param>
+        /// <param name="position">Top left position of the texture relative to the terrain.</param>
+        /// <param name="tester">Delegate method used to determine what colors should be included in the terrain.</param>
+        public void ApplyTexture(Texture2D texture, Vector2 position)
+        {
+            colorData = new Color[texture.Width * texture.Height];
+
+            texture.GetData(colorData);
+
+            for (int y = (int)position.Y; y < texture.Height + (int)position.Y; y++)
+            {
+                for (int x = (int)position.X; x < texture.Width + (int)position.X; x++)
+                {
+                    if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
+                    {
+                        if (colorData[((y - (int)position.Y) * texture.Width) + (x - (int)position.X)].A > 0)
+                            _terrainMap[x, y] = 1;
+                        else
+                            _terrainMap[x, y] = -1;
+                    }
+                }
+            }
+
+            // generate terrain
+            for (int gy = 0; gy < _ynum; gy++)
+            {
+                for (int gx = 0; gx < _xnum; gx++)
+                {
+                    //remove old terrain object at grid cell
+                    if (_bodyMap[gx, gy] != null)
+                    {
+                        for (int i = 0; i < _bodyMap[gx, gy].Count; i++)
+                        {
+                            World.RemoveBody(_bodyMap[gx, gy][i]);
+                        }
+                    }
+
+                    _bodyMap[gx, gy] = null;
+
+                    //generate new one
+                    GenerateTerrain(gx, gy);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Apply a texture to the terrain.
         /// </summary>
         /// <param name="position">Top left position of the texture relative to the terrain.</param>
         public void ApplyData(sbyte[,] data, Vector2 position)
@@ -252,6 +357,7 @@ namespace WizardsOrWhatever
             if (p.X >= 0 && p.X < _localWidth && p.Y >= 0 && p.Y < _localHeight)
             {
                 _terrainMap[(int)p.X, (int)p.Y] = value;
+                // TODO: Color map for texture gets a 0 on p.X, p.Y if value == 1
 
                 // expand dirty area
                 if (p.X < _dirtyArea.LowerBound.X) _dirtyArea.LowerBound.X = p.X;
@@ -329,6 +435,11 @@ namespace WizardsOrWhatever
                         _bodyMap[gx, gy].Add(BodyFactory.CreatePolygon(World, poly, 1));
                 }
             }
+        }
+
+        public void Draw(SpriteBatch spriteBatch)
+        {
+
         }
     }
 }

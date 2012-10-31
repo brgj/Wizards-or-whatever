@@ -7,22 +7,37 @@ namespace WizardsOrWhatever
 {
     public class Camera2D
     {
+        // Zoom min = 1/20 * default
         private const float _minZoom = 0.02f;
+        // Zoom max = 20 * default
         private const float _maxZoom = 20f;
+        
         private static GraphicsDevice _graphics;
 
+        // The display view
         private Matrix _batchView;
+        // The sim view
+        private Matrix _view;
 
+
+        private Matrix _projection;
+
+
+        private Vector2 _translateCenter;
+
+        // The current position and zoom of the camera
         private Vector2 _currentPosition;
-
         private float _currentZoom;
+
+        // Restricts the camera bounds to be within max and min
         private Vector2 _maxPosition;
         private Vector2 _minPosition;
-        private Matrix _projection;
+
+
+        
+        // The position and body of the target being followed
         private Vector2 _targetPosition;
         private Body _trackingBody;
-        private Vector2 _translateCenter;
-        private Matrix _view;
 
         /// <summary>
         /// The constructor for the Camera2D class.
@@ -122,6 +137,10 @@ namespace WizardsOrWhatever
             }
         }
 
+        /// <summary>
+        /// Moves the camera by the specified amount. 
+        /// Will snap back if following body.
+        /// </summary>
         public void MoveCamera(Vector2 amount)
         {
             _currentPosition += amount;
