@@ -38,7 +38,7 @@ namespace WizardsOrWhatever
         SpriteFont font;
         SpriteFont titleFont;
         Texture2D blankTexture;
-        Color characterColor;
+        Color characterColor =  Color.White;
 
         bool isInitialized;
 
