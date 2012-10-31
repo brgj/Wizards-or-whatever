@@ -18,7 +18,6 @@ namespace WizardsOrWhatever
         private float _currentZoom;
         private Vector2 _maxPosition;
         private Vector2 _minPosition;
-        private bool _positionTracking;
         private Matrix _projection;
         private Vector2 _targetPosition;
         private Body _trackingBody;
@@ -120,34 +119,6 @@ namespace WizardsOrWhatever
             set
             {
                 _trackingBody = value;
-                if (_trackingBody != null)
-                {
-                    _positionTracking = true;
-                }
-            }
-        }
-
-        public bool EnablePositionTracking
-        {
-            get { return _positionTracking; }
-            set
-            {
-                if (value && _trackingBody != null)
-                {
-                    _positionTracking = true;
-                }
-                else
-                {
-                    _positionTracking = false;
-                }
-            }
-        }
-
-        public bool EnableTracking
-        {
-            set
-            {
-                EnablePositionTracking = value;
             }
         }
 
@@ -159,7 +130,6 @@ namespace WizardsOrWhatever
                 Vector2.Clamp(ref _currentPosition, ref _minPosition, ref _maxPosition, out _currentPosition);
             }
             _targetPosition = _currentPosition;
-            _positionTracking = false;
         }
 
         /// <summary>
@@ -172,16 +142,7 @@ namespace WizardsOrWhatever
             _minPosition = Vector2.Zero;
             _maxPosition = Vector2.Zero;
 
-            _positionTracking = false;
-
             _currentZoom = 1f;
-
-            SetView();
-        }
-
-        public void Jump2Target()
-        {
-            _currentPosition = _targetPosition;
 
             SetView();
         }
@@ -211,31 +172,12 @@ namespace WizardsOrWhatever
         {
             if (_trackingBody != null)
             {
-                if (_positionTracking)
+                _targetPosition = _trackingBody.Position;
+                if (_minPosition != _maxPosition)
                 {
-                    _targetPosition = _trackingBody.Position;
-                    if (_minPosition != _maxPosition)
-                    {
-                        Vector2.Clamp(ref _targetPosition, ref _minPosition, ref _maxPosition, out _targetPosition);
-                    }
+                    Vector2.Clamp(ref _targetPosition, ref _minPosition, ref _maxPosition, out _targetPosition);
                 }
             }
-            Vector2 delta = _targetPosition - _currentPosition;
-            float distance = delta.Length();
-            if (distance > 0f)
-            {
-                delta /= distance;
-            }
-            float inertia;
-            if (distance < 10f)
-            {
-                inertia = (float)Math.Pow(distance / 10.0, 2.0);
-            }
-            else
-            {
-                inertia = 1f;
-            }
-            //_currentPosition += 100f * delta * inertia * (float)gameTime.ElapsedGameTime.TotalSeconds;
             _currentPosition = _targetPosition;
 
             SetView();

@@ -122,7 +122,6 @@ namespace WizardsOrWhatever
 
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
-            camera.EnablePositionTracking = true;
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 

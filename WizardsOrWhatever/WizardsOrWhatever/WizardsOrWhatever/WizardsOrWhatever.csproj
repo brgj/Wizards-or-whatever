@@ -146,6 +146,7 @@
     <Compile Include="Screen Management\InputState.cs" />
     <Compile Include="Screen Management\ScreenManager.cs" />
     <Compile Include="StaticPhysicsObject.cs" />
+    <Compile Include="Terrain.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
