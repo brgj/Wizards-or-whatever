@@ -40,7 +40,7 @@ namespace WizardsOrWhatever
 
         //The world object that encapsulates all physics objects
         World world;
-        MSTerrain terrain;
+        Terrain terrain;
 
         //Camera object that follows the character
         Camera2D camera;
@@ -94,12 +94,11 @@ namespace WizardsOrWhatever
 
             world = new World(new Vector2(0, 9.8f));
 
-            terrain = new MSTerrain(world, new AABB(new Vector2(0, 0), 80, 80))
+            terrain = new Terrain(world, new AABB(new Vector2(0, 0), 80, 80))
             {
                 PointsPerUnit = 10,
                 CellSize = 50,
                 SubCellSize = 5,
-                Decomposer = Decomposer.Earclip,
                 Iterations = 2
             };
             terrain.Initialize();
@@ -122,12 +121,14 @@ namespace WizardsOrWhatever
 
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
+            camera.Zoom = .2f;
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
             // ----------------------------------------------------------
-            Texture2D terrainTex = Content.Load<Texture2D>("Terrain");
-            terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width-10, -170), InsideTerrainTest);
+            Texture2D terrainTex = Content.Load<Texture2D>("ground");
+            terrain.CreateRandomTerrain(terrainTex, new Vector2(0, 0));
+            //terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width-10, -170), InsideTerrainTest);
 
             font = Content.Load<SpriteFont>("font");
 
@@ -396,6 +397,7 @@ namespace WizardsOrWhatever
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.View);
 
+            terrain.Draw(spriteBatch);
             // Draw the fps to screen
             spriteBatch.DrawString(font, "fps: " + fps, camera.Position - new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2 - 10, ScreenManager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
             ground.Draw(spriteBatch);
@@ -444,16 +446,6 @@ namespace WizardsOrWhatever
 
                 ScreenManager.FadeBackBufferToBlack(alpha);
             }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        private bool InsideTerrainTest(Color color)
-        {
-            return color == Color.Black;
         }
 
         private void EnableOrDisableFlags(DebugViewFlags flags)

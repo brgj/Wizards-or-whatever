@@ -72,6 +72,11 @@ namespace WizardsOrWhatever
         /// </summary>
         private Color[] colorData;
 
+        /// <summary>
+        /// Texture object for drawing
+        /// </summary>
+        private Texture2D terrainTexture;
+
         private float _localWidth;
         private float _localHeight;
         private int _xnum;
@@ -119,18 +124,18 @@ namespace WizardsOrWhatever
 
         public int[] RandomizeTerrain()
         {
-            int[] terrainContour = new int[(int)ConvertUnits.ToDisplayUnits(Width)];
+            int[] terrainContour = new int[(int)_localWidth];
             Random randomizer = new Random();
             double rand1 = randomizer.NextDouble() + 1;
             double rand2 = randomizer.NextDouble() + 2;
             double rand3 = randomizer.NextDouble() + 3;
 
             //TODO: probably want to change offset to half screen height
-            float offset = ConvertUnits.ToDisplayUnits(Height) / 2;
-            float peakHeight = ConvertUnits.ToDisplayUnits(Height);
-            float flatness = 70;
+            float offset = Height;
+            float peakHeight = Height;
+            float flatness = 150;
 
-            for (int x = 0; x < (int)ConvertUnits.ToDisplayUnits(Width); x++)
+            for (int x = 0; x < (int)_localWidth; x++)
             {
                 double height = peakHeight / rand1 * Math.Sin((float)x / flatness * rand1 + rand1);
                 height += peakHeight / rand2 * Math.Sin((float)x / flatness * rand2 + rand2);
@@ -149,8 +154,8 @@ namespace WizardsOrWhatever
         {
             int[] terrainContour = RandomizeTerrain();
             Color[,] groundColors = TextureTo2DArray(texture);
-            int width = (int)ConvertUnits.ToDisplayUnits(Width);
-            int height = (int)ConvertUnits.ToDisplayUnits(Height);
+            int width = (int)_localWidth;
+            int height = (int)_localHeight;
             colorData = new Color[width * height];
 
             for (int x = 0; x < width; x++)
@@ -167,6 +172,8 @@ namespace WizardsOrWhatever
                     }
                 }
             }
+            terrainTexture = new Texture2D(texture.GraphicsDevice, (int)_localWidth, (int)_localHeight, false, SurfaceFormat.Color);
+            Apply(position);
         }
 
         public static Color[,] TextureTo2DArray(Texture2D texture)
@@ -184,16 +191,16 @@ namespace WizardsOrWhatever
             return colors2D;
         }
 
-        //TODO: Look over
+
         private void Apply(Vector2 position)
         {
-            for (int y = (int)position.Y; y < ConvertUnits.ToDisplayUnits(Height) + (int)position.Y; y++)
+            for (int y = (int)position.Y; y < _localHeight + (int)position.Y; y++)
             {
-                for (int x = (int)position.X; x < ConvertUnits.ToDisplayUnits(Width) + (int)position.X; x++)
+                for (int x = (int)position.X; x < _localWidth + (int)position.X; x++)
                 {
                     if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
                     {
-                        if (colorData[((y - (int)position.Y) * (int)ConvertUnits.ToDisplayUnits(Width)) + (x - (int)position.X)].A > 0)
+                        if (colorData[((y - (int)position.Y) * (int)_localWidth) + (x - (int)position.X)].A > 0)
                             _terrainMap[x, y] = 1;
                         else
                             _terrainMap[x, y] = -1;
@@ -232,8 +239,8 @@ namespace WizardsOrWhatever
         public void ApplyTexture(Texture2D texture, Vector2 position)
         {
             colorData = new Color[texture.Width * texture.Height];
-
-            texture.GetData(colorData);
+            terrainTexture = texture;
+            terrainTexture.GetData(colorData);
 
             for (int y = (int)position.Y; y < texture.Height + (int)position.Y; y++)
             {
@@ -439,7 +446,10 @@ namespace WizardsOrWhatever
 
         public void Draw(SpriteBatch spriteBatch)
         {
-
+            terrainTexture.SetData(colorData);
+            Console.WriteLine("colordatalength=" + colorData.Length);
+            Console.WriteLine("terrainwidthheight=" + terrainTexture.Width*terrainTexture.Height);
+            spriteBatch.Draw(terrainTexture, new Vector2(0, 0), null, Color.White, 0f, new Vector2(terrainTexture.Width / 2.0f, terrainTexture.Height / 2.0f), new Vector2(10f, 3f), SpriteEffects.None, 1f);
         }
     }
 }
