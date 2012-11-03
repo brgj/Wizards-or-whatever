@@ -38,7 +38,7 @@ namespace WizardsOrWhatever
 
         //Crosshair texture
         Texture2D crosshair;
-        Vector2 cursorPos;
+        public Vector2 cursorPos;
         MouseState mousestate;
 
         #endregion

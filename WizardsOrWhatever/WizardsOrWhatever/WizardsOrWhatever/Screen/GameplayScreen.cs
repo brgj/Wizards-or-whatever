@@ -244,6 +244,12 @@ namespace WizardsOrWhatever
         {
             base.Update(gameTime, otherScreenHasFocus, false);
 
+            //UPDATES EACH PROJECTILE IN THE GAME
+            foreach(Projectile projectile in projectiles)
+            {
+                projectile.UpdateProjectile(gameTime);
+            }
+
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
                 pauseAlpha = Math.Min(pauseAlpha + 1f / 32, 1);
@@ -431,6 +437,31 @@ namespace WizardsOrWhatever
             {
                 paddle.Draw(spriteBatch);
             }
+
+            //--------NEED TO REWORK--------
+            //checks to see if a player is firing through their own input, creates a projectile associated with that player.
+            /* TODO:
+             * Need to add projectile types, this means that it will select a players selected weapon and pass it into projectile.
+             * Based on this we can subtract the nessesary mana / damage / rate of fire
+             * Change if statement to include players mana compared to selected spells requirement
+             */
+            if(player.canFire)
+            {
+                if (player.Mana > 20)
+                {
+                    Console.Write("POSITION: " + player.Position + " CURSOR: " + camera.ConvertScreenToWorld(playerHUD.cursorPos) + "\n");
+                    Projectile projectile = new Projectile(world, player.Position, Content.Load<Texture2D>("projectile_fire"), new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player);
+                    player.Mana -= 20;
+                    projectiles.Add(projectile);
+                }
+                player.canFire = false;
+            }
+
+            foreach (PhysicsObject projectile in projectiles)
+            {
+                projectile.Draw(spriteBatch);
+            }
+            //-----------------------
 
             spriteBatch.End();
 

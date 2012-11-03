@@ -30,15 +30,20 @@ namespace WizardsOrWhatever
         protected float spriteTimer = 0f;
         protected float spriteInterval = 100f;
         Input input;
-        double elapsedTime;
+        double elapsedTimeHealth;
         private Color charColor;
+
+        //firing variables
+        public bool isFiring = false;
+        public bool canFire = false;
+        double lastFireTime = 0;
+        double currentFireTime = 0;
 
         Color CharacterColor
         {
             get { return charColor; }
             set { charColor = value; }
         }
-
 
         int SpriteX
         {
@@ -189,6 +194,7 @@ namespace WizardsOrWhatever
         public void Update(GameTime gameTime)
         {
             //HandleInput();
+            currentFireTime += gameTime.ElapsedGameTime.TotalMilliseconds;
             spriteTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             if (spriteTimer > spriteInterval)
             {
@@ -200,11 +206,11 @@ namespace WizardsOrWhatever
             KeyboardState mKeys = Keyboard.GetState();
             if (Mana < maxMana)
             {
-                elapsedTime += gameTime.ElapsedGameTime.TotalMilliseconds;
-                if (elapsedTime >= 50)
+                elapsedTimeHealth += gameTime.ElapsedGameTime.TotalMilliseconds;
+                if (elapsedTimeHealth >= 50)
                 {
                     Mana += 1;
-                    elapsedTime -= 50;
+                    elapsedTimeHealth -= 50;
                 }
             }
             if (mKeys.IsKeyDown(Keys.OemPlus) == true)
@@ -226,6 +232,20 @@ namespace WizardsOrWhatever
                 Mana -= 1;
             }
             Mana = (int)MathHelper.Clamp(Mana, 0, 100);
+            //END TESTING
+
+            //---TESTING FIRE RATE----
+            if(isFiring == true)
+            {
+                //TODO: Replace 500 with weapon cooldown time
+                if ((currentFireTime - lastFireTime) >= 500)
+                {
+                    canFire = true;
+                    lastFireTime = currentFireTime;
+                }
+                isFiring = false;
+            }
+
             //END TESTING
         }
 
@@ -294,28 +314,34 @@ namespace WizardsOrWhatever
             public void KeyboardInput()
             {
                 KeyboardState keyboardState = Keyboard.GetState();
+                //Firing, seperate to fire at any time
+                if (keyboardState.IsKeyDown(Keys.Space))
+                {
+                    player.isFiring = true;
+                }
+
                 if (player.State == Character.CharState.Wallslide)
                 {
-                    if (keyboardState.IsKeyDown(Keys.Left) && keyboardState.IsKeyDown(Keys.Space))
+                    if (keyboardState.IsKeyDown(Keys.A) && keyboardState.IsKeyDown(Keys.W))
                     {
                         WallJumpLeft();
                     }
-                    else if (keyboardState.IsKeyDown(Keys.Right) && keyboardState.IsKeyDown(Keys.Space))
+                    else if (keyboardState.IsKeyDown(Keys.D) && keyboardState.IsKeyDown(Keys.W))
                     {
                         WallJumpRight();
                     }
                 }
                 else if (player.State != Character.CharState.Jumping)
                 {
-                    if (keyboardState.IsKeyDown(Keys.Space))
+                    if (keyboardState.IsKeyDown(Keys.W))
                     {
                         Jump();
                     }
-                    else if (keyboardState.IsKeyDown(Keys.Left))
+                    else if (keyboardState.IsKeyDown(Keys.A))
                     {
                         RunLeft();
                     }
-                    else if (keyboardState.IsKeyDown(Keys.Right))
+                    else if (keyboardState.IsKeyDown(Keys.D))
                     {
                         RunRight();
                     }
@@ -403,11 +429,11 @@ namespace WizardsOrWhatever
 
             private void AirMove(KeyboardState keyboardState)
             {
-                if ((keyboardState.IsKeyDown(Keys.Left) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.Right) && player.launchSpeed > 0))
+                if ((keyboardState.IsKeyDown(Keys.A) && player.launchSpeed < 0) || (keyboardState.IsKeyDown(Keys.D) && player.launchSpeed > 0))
                 {
                     player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
                 }
-                else if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.Left))
+                else if (keyboardState.IsKeyDown(Keys.A) || keyboardState.IsKeyDown(Keys.D))
                 {
                     player.body.LinearVelocity = new Vector2(-player.launchSpeed, player.body.LinearVelocity.Y);
                 }
