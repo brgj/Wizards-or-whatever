@@ -36,18 +36,22 @@ namespace WizardsOrWhatever.Screen
         //Camera object that follows the character
         Camera2D camera;
         //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
-
+        //List<CompositeCharacter> Players;
         CompositeCharacter player;
         CompositeCharacter player2;
+        CompositeCharacter player3;
+        CompositeCharacter player4;
         HUD playerHUD;
         HUD playerHUD2;
+        HUD playerHUD3;
+        HUD playerHUD4;
 
         //Walls. Placeholders for terrain.
         PhysicsObject ground;
         PhysicsObject leftWall;
         PhysicsObject rightWall;
         PhysicsObject ceiling;
-
+        bool isPlayer2 = false;
         //Projectiles
         List<Projectile> projectiles = new List<Projectile>();
 
@@ -70,8 +74,6 @@ namespace WizardsOrWhatever.Screen
 
         //Variable for the alpha transparency on pause
         float pauseAlpha;
-
-
 
         //TODO: Look into camera controls more
         //TODO: get MSTerrain working properly
@@ -110,17 +112,15 @@ namespace WizardsOrWhatever.Screen
         /// </summary>
         public override void LoadContent()
         {
-            client = new TcpClient();
-            client.NoDelay = true;
-            client.Connect(IP, PORT);
-            readBuffer = new byte[BUFFER_SIZE];
-            client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
-
+            //read write stream to the server
             readStream = new MemoryStream();
             writeStream = new MemoryStream();
 
             reader = new BinaryReader(readStream);
             writer = new BinaryWriter(writeStream);
+
+
+
             if (Content == null)
                 Content = new ContentManager(ScreenManager.Game.Services, "Content");
 
@@ -136,31 +136,45 @@ namespace WizardsOrWhatever.Screen
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
-
+            // ----------------------------------------------------------
             Texture2D terrainTex = Content.Load<Texture2D>("Terrain");
             terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width - 10, -170), InsideTerrainTest);
 
             font = Content.Load<SpriteFont>("font");
 
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
-            // ESS LOOK HERE!
+            //Create player
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
             ScreenManager.Game.Components.Add(playerHUD);
-            if (player2 != null)
+            if (isPlayer2)
             {
                 playerHUD2 = new HUD(ScreenManager.Game, player2, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
 
                 ScreenManager.Game.Components.Add(playerHUD2);
             }
+
+            client = new TcpClient();
+            client.NoDelay = true;
+            client.Connect(IP, PORT);
+            readBuffer = new byte[BUFFER_SIZE];
+            client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
+
+
+            /*if (player3 != null)
+            {
+                playerHUD3 = new HUD(ScreenManager.Game, player3, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
+
+                ScreenManager.Game.Components.Add(playerHUD3);
+            }
+            if (player4 != null)
+            {
+                playerHUD4 = new HUD(ScreenManager.Game, player4, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
+
+                ScreenManager.Game.Components.Add(playerHUD4);
+            }*/
             // Set camera to track player
             camera.TrackingBody = player.body;
 
@@ -266,6 +280,17 @@ namespace WizardsOrWhatever.Screen
         public override void Update(GameTime gameTime, bool otherScreenHasFocus,
                                                        bool coveredByOtherScreen)
         {
+
+            //-------------------------------------
+
+
+            Vector2 iPosition = new Vector2(player.Position.X, player.Position.Y);
+
+            KeyboardState current = Keyboard.GetState();
+            Vector2 movement = Vector2.Zero;
+
+
+            //-----------------------------------
             base.Update(gameTime, otherScreenHasFocus, false);
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
@@ -350,11 +375,30 @@ namespace WizardsOrWhatever.Screen
 
                 player.Update(gameTime);
                 camera.Update(gameTime);
-
                 //Notifies the world that time has progressed.
                 //Collision detection, integration, and constraint solution are performed
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
 
+                //---------------------------------
+
+                //player.move(movement) = ;
+
+
+                Vector2 nPosition = new Vector2(player.Position.X, player.Position.Y);
+
+                Vector2 deltap = Vector2.Subtract(nPosition, iPosition);
+                if (deltap != Vector2.Zero)
+                {
+                    writeStream.Position = 0;
+                    writer.Write((byte)2);
+                    writer.Write(deltap.X);
+                    writer.Write(-deltap.Y);
+                    SendData(GetDataFromMemoryStream(writeStream));
+                }
+
+                player.Update(gameTime);
+
+                //----------------------------------
                 lastKeyboardState = keyboardState;
             }
         }
@@ -452,10 +496,18 @@ namespace WizardsOrWhatever.Screen
             {
                 player.Draw(spriteBatch);
             }
-            if (player2 != null)
+            if (isPlayer2)
             {
                 player2.Draw(spriteBatch);
+            }/*
+            if (player3 != null)
+            {
+                player3.Draw(spriteBatch);
             }
+            if (player4 != null)
+            {
+                player4.Draw(spriteBatch);
+            }*/
             foreach (PhysicsObject paddle in paddles)
             {
                 paddle.Draw(spriteBatch);
@@ -507,6 +559,7 @@ namespace WizardsOrWhatever.Screen
 
         #endregion
         #region Networking
+        int pindex = 1;
         TcpClient client;
         string IP = "127.0.0.1";
         int PORT = 1490;
@@ -557,36 +610,67 @@ namespace WizardsOrWhatever.Screen
             readStream.Write(data, 0, data.Length);//read data
             readStream.Position = 0;
 
-            Protocol p;
+            Protocols p = new Protocols();
             try
             {
 
 
-                p = (Protocol)reader.ReadByte();
-
+                //p = (Protocol)reader.ReadByte();
+                p.setData(reader.ReadByte());
                 /*if (GameScreen.isExiting)
                 {
                     System.Diagnostics.Debug.WriteLine
                 }*/
-                if (p == Protocol.Connected)
+                if (p.getData() == 1)//p == Protocol.Connected)
                 {
+                    //pindex++;
+                    System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
-                    if (player2 == null)
+                    if (!isPlayer2) //player2 == null)
                     {
+                        isPlayer2 = true;
                         player2 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
                         writeStream.Position = 0;
-                        writer.Write((byte)Protocol.Connected);
+                        writer.Write(p.getData());
+                        SendData(GetDataFromMemoryStream(writeStream));
+                        //pindex = pindex - 1;
+                    }/*
+                    if (pindex == 4 && player3 == null)
+                    {
+                        player3 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                        writeStream.Position = 0;
+                        writer.Write(p.getData());
                         SendData(GetDataFromMemoryStream(writeStream));
                     }
+                    if (pindex == 7 && player4 == null)
+                    {
+                        player4 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                        writeStream.Position = 0;
+                        writer.Write(p.getData());
+                        SendData(GetDataFromMemoryStream(writeStream));
+                    }*/
                 }
 
-                else if (p == Protocol.Disconnected)
+                else if (p.getData() == 0)//p == Protocol.Disconnected)
                 {
+                    //pindex--;
+                    //System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
-                    player2 = null;
+                    isPlayer2 = false;
+                    //player2 = null;
+                }
+                else if (p.getData() == 2)
+                {
+                    float px = reader.ReadSingle();
+                    float py = reader.ReadSingle();
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+                    player2.Position = new Vector2(player2.Position.X + px, player2.Position.Y - py);
                 }
             }
             catch (Exception e)

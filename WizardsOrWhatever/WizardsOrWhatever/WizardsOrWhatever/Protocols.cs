@@ -6,10 +6,35 @@ using System.Text;
 namespace WizardsOrWhatever
 {
 
-    public enum Protocol : int
+    class Protocols
     {
-        Disconnected = 0,
-        Connected = 1,
-        index = 1,
+        /*public enum Protocol:int
+        {
+            Disconnected = 0,
+            Connected = 1,
+            index,
+        }*/
+        public int index;
+        private byte data;
+        public Protocols()
+        {
+        }
+        public void setData(byte data)
+        {
+            this.data = data;
+        }
+        public byte getData()
+        {
+            return data;
+        }
+        public void setIndex(int index)
+        {
+            this.index = index;
+        }
+        public int getIndex()
+        {
+            return index;
+        }
     }
+
 }
