@@ -94,7 +94,7 @@ namespace WizardsOrWhatever
 
             world = new World(new Vector2(0, 9.8f));
 
-            terrain = new Terrain(world, new AABB(new Vector2(0, 0), 80, 80))
+            terrain = new Terrain(world, new AABB(new Vector2(10, 10), 20, 20))
             {
                 PointsPerUnit = 10,
                 CellSize = 50,
@@ -121,7 +121,7 @@ namespace WizardsOrWhatever
 
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
-            camera.Zoom = .2f;
+            //camera.Zoom = .2f;
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 

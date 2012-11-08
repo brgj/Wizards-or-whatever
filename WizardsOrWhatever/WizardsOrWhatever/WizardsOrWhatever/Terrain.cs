@@ -98,7 +98,7 @@ namespace WizardsOrWhatever
         public void Initialize()
         {
             // find top left of terrain in world space
-            _topLeft = new Vector2(Center.X - (Width * 0.5f), Center.Y - (-Height * 0.5f));
+            _topLeft = new Vector2(Center.X - (Width * 0.5f), Center.Y - (Height * 0.5f));
 
             // convert the terrains size to a point cloud size
             _localWidth = Width * PointsPerUnit;
@@ -124,7 +124,7 @@ namespace WizardsOrWhatever
 
         public int[] RandomizeTerrain()
         {
-            int[] terrainContour = new int[(int)_localWidth];
+            int[] terrainContour = new int[(int)_localWidth*10];
             Random randomizer = new Random();
             double rand1 = randomizer.NextDouble() + 1;
             double rand2 = randomizer.NextDouble() + 2;
@@ -135,7 +135,7 @@ namespace WizardsOrWhatever
             float peakHeight = Height;
             float flatness = 150;
 
-            for (int x = 0; x < (int)_localWidth; x++)
+            for (int x = 0; x < (int)_localWidth*10; x++)
             {
                 double height = peakHeight / rand1 * Math.Sin((float)x / flatness * rand1 + rand1);
                 height += peakHeight / rand2 * Math.Sin((float)x / flatness * rand2 + rand2);
@@ -201,9 +201,9 @@ namespace WizardsOrWhatever
                     if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
                     {
                         if (colorData[((y - (int)position.Y) * (int)_localWidth) + (x - (int)position.X)].A > 0)
-                            _terrainMap[x, y] = 1;
-                        else
                             _terrainMap[x, y] = -1;
+                        else
+                            _terrainMap[x, y] = 1;
                     }
                 }
             }
@@ -359,12 +359,12 @@ namespace WizardsOrWhatever
 
             // find map position for each axis
             p.X = p.X * _localWidth / Width;
-            p.Y = p.Y * -_localHeight / Height;
+            p.Y = p.Y * _localHeight / Height;
 
             if (p.X >= 0 && p.X < _localWidth && p.Y >= 0 && p.Y < _localHeight)
             {
                 _terrainMap[(int)p.X, (int)p.Y] = value;
-                // TODO: Color map for texture gets a 0 on p.X, p.Y if value == 1
+                colorData[(int)p.X + (int)p.Y * (int)_localWidth] = Color.Transparent;
 
                 // expand dirty area
                 if (p.X < _dirtyArea.LowerBound.X) _dirtyArea.LowerBound.X = p.X;
@@ -424,7 +424,7 @@ namespace WizardsOrWhatever
             _bodyMap[gx, gy] = new List<Body>();
 
             // create the scale vector
-            Vector2 scale = new Vector2(1f / PointsPerUnit, 1f / -PointsPerUnit);
+            Vector2 scale = new Vector2(1f / PointsPerUnit, 1f / PointsPerUnit);
 
             // create physics object for this grid cell
             foreach (var item in polys)
@@ -447,9 +447,7 @@ namespace WizardsOrWhatever
         public void Draw(SpriteBatch spriteBatch)
         {
             terrainTexture.SetData(colorData);
-            Console.WriteLine("colordatalength=" + colorData.Length);
-            Console.WriteLine("terrainwidthheight=" + terrainTexture.Width*terrainTexture.Height);
-            spriteBatch.Draw(terrainTexture, new Vector2(0, 0), null, Color.White, 0f, new Vector2(terrainTexture.Width / 2.0f, terrainTexture.Height / 2.0f), new Vector2(10f, 3f), SpriteEffects.None, 1f);
+            spriteBatch.Draw(terrainTexture, _topLeft + Center, null, Color.White, 0f, new Vector2(0, 0), new Vector2(10f, 10f), SpriteEffects.None, 1f);
         }
     }
 }
