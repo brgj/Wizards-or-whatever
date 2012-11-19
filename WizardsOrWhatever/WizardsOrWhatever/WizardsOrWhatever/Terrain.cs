@@ -7,6 +7,8 @@ using FarseerPhysics.Collision;
 using FarseerPhysics.Factories;
 using FarseerPhysics.Common;
 using FarseerPhysics.Common.Decomposition;
+using FarseerPhysics.Collision.Shapes;
+using FarseerPhysics.Se
 
 namespace WizardsOrWhatever
 {
@@ -76,6 +78,9 @@ namespace WizardsOrWhatever
         /// Texture object for drawing
         /// </summary>
         private Texture2D terrainTexture;
+
+        private Vector2[] tempVertices = new Vector2[8];
+
 
         private float _localWidth;
         private float _localHeight;
@@ -349,7 +354,7 @@ namespace WizardsOrWhatever
         /// <summary>
         /// Modify a single point in the terrain.
         /// </summary>
-        /// <param name="location">World location to modify. Automatically clipped.</param>
+        /// <param name="location">World location to modify. Automatically clipped.</param>z
         /// <param name="value">-1 = inside terrain, 1 = outside terrain</param>
         public void ModifyTerrain(Vector2 location, sbyte value)
         {
@@ -439,7 +444,59 @@ namespace WizardsOrWhatever
                 foreach (Vertices poly in decompPolys)
                 {
                     if (poly.Count > 2)
+                    {
                         _bodyMap[gx, gy].Add(BodyFactory.CreatePolygon(World, poly, 1));
+
+                    }
+                }
+            }
+        }
+
+        // Maybe should be called from Draw and take a graphics device as a param
+        public void TextureTriangles()
+        {
+            for (int gy = 0; gy < _ynum; gy++)
+            {
+                for (int gx = 0; gx < _xnum; gx++)
+                {
+                    foreach (Body b in _bodyMap[gx, gy])
+                    {
+                        Transform xf;
+                        b.GetTransform(out xf);
+                        foreach (Fixture f in b.FixtureList) {
+                            PolygonShape poly = (PolygonShape)f.Shape;
+                            int vertexCount = poly.Vertices.Count;
+
+                            for (int i = 0; i < vertexCount; i++)
+                            {
+                                tempVertices[i] = MathUtils.Multiply(ref xf, poly.Vertices[i]);
+                            }
+                            for(int i = 1; i < vertexCount - 1; i++)
+                            {
+                                //Add Vertex 0 of type triangle list
+                                //Add Vertex i of type triangle list
+                                //Add Vertex i+1 of type triangle list
+                            }
+                            BasicEffect _effect = new BasicEffect(device);
+                            _effect.Texture = terrainTexture;
+                            _effect.TextureEnabled = true;
+                            foreach (var pass in _effect.CurrentTechnique.Passes)
+                            {
+                                pass.Apply();
+
+                                device.DrawUserIndexedPrimitives<VertexPositionTexture>
+                                (
+                                    PrimitiveType.TriangleStrip, // same result with TriangleList
+                                    tempVertices,
+                                    0,
+                                    tempVertices.Length,
+                                    new int[] { 0, 1, 2 },
+                                    0,
+                                    1
+                                );
+                            }
+                        }
+                    }
                 }
             }
         }
