@@ -121,13 +121,11 @@ namespace WizardsOrWhatever
             // ----------------------------------------------------------
             Texture2D terrainTex = Content.Load<Texture2D>("ground");
             terrain.CreateRandomTerrain(new Vector2(0, 0));
-            //terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width-10, -170), InsideTerrainTest);
 
             font = Content.Load<SpriteFont>("font");
 
             
-            player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("bean_ss1"), new Vector2(0.0f, 0.0f), ScreenManager.CharacterColor);
+            player = new CompositeCharacter(world, new Vector2(0, 0), Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
@@ -137,15 +135,11 @@ namespace WizardsOrWhatever
             camera.TrackingBody = player.body;
 
             //Create walls
-            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Texture2D>("platformTex"), 
-                new Vect            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Textu      //world.AddJoint(l);
-            //world.AddJoint(r);
-
-            //paddles.Add(trampolinePaddle);
-            //PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
-
-            //paddles.Add(staticPaddle);
-
+            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Texture2D>("platformTex"),
+                new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
+            rightWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(100.0f), 0), Content.Load<Texture2D>("platformTex"),
+                new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
+            
             // ----------------------------------------------------------
 
             // Sleep for the loading screen
@@ -334,18 +328,12 @@ namespace WizardsOrWhatever
 
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.View);
-oj, ref view);            /anager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
-            //ground.Draw(spriteBatch);
+            terrain.RenderTerrain(ref proj, ref view);
+
             leftWall.Draw(spriteBatch);
             rightWall.Draw(spriteBatch);
-            //ceiling.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
-
-            //foreach (PhysicsObject paddle in paddles)
-            //{
-                //paddle.Draw(spriteBatch);
-            //}
 
             //--------NEED TO REWORK--------
             //checks to see if a player is firing through their own input, creates a projectile associated with that player.

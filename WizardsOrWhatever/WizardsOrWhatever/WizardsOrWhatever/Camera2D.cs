@@ -19,9 +19,7 @@ namespace WizardsOrWhatever
         // The sim view
         private Matrix _view;
 
-
         private Matrix _projection;
-
 
         private Vector2 _translateCenter;
 
@@ -32,8 +30,6 @@ namespace WizardsOrWhatever
         // Restricts the camera bounds to be within max and min
         private Vector2 _maxPosition;
         private Vector2 _minPosition;
-
-
         
         // The position and body of the target being followed
         private Vector2 _targetPosition;

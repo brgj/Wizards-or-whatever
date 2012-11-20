@@ -44,8 +44,8 @@ namespace WizardsOrWhatever
             body.IgnoreCollisionWith(player.wheel);
             body.IgnoreGravity = true;
             body.IsBullet = true;
-            body.LinearVelocity = movements;
-            
+            body.LinearVelocity = movements + player.body.LinearVelocity;
+            body.OnCollision += new OnCollisionEventHandler(OnProjectileCollision);
         }
 
         public void UpdateProjectile(GameTime gametime)
@@ -53,5 +53,11 @@ namespace WizardsOrWhatever
             Position += movements * speed * (float)gametime.ElapsedGameTime.TotalSeconds;
         }
 
+        public bool OnProjectileCollision(Fixture fix1, Fixture fix2, Contact contact)
+        {
+            Console.WriteLine(fix1.Body.Position);
+            Console.WriteLine(fix2.Body.Position);
+            return true;
+        }
     }
 }
