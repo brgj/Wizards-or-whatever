@@ -8,16 +8,21 @@ using FarseerPhysics.Factories;
 using FarseerPhysics.Common;
 using FarseerPhysics.Common.Decomposition;
 using FarseerPhysics.Collision.Shapes;
-using FarseerPhysics.Se
+using FarseerPhysics.DebugViews;
 
 namespace WizardsOrWhatever
 {
 
     /// <summary>
-    /// Simple class to maintain a terrain.
+    /// Class to draw and maintain terrain.
     /// </summary>
     public class Terrain
     {
+        /// <summary>
+        /// The maximum number of vertices that should be used in a polygon.
+        /// </summary>
+        private const int MAX_VERTICES = 8;
+
         /// <summary>
         /// World to manage terrain in.
         /// </summary>
@@ -54,12 +59,6 @@ namespace WizardsOrWhatever
         public int SubCellSize;
 
         /// <summary>
-        /// Number of iterations to perform in the Marching Squares algorithm.
-        /// Note: More then 3 has almost no effect on quality.
-        /// </summary>
-        public int Iterations = 2;
-
-        /// <summary>
         /// Point cloud defining the terrain.
         /// </summary>
         private sbyte[,] _terrainMap;
@@ -70,31 +69,65 @@ namespace WizardsOrWhatever
         private List<Body>[,] _bodyMap;
 
         /// <summary>
-        /// Texture broken into colours
+        /// The Graphics Device accessor used to draw the terrain.
         /// </summary>
-        private Color[] colorData;
+        private PrimitiveBatch _primitiveBatch;
 
         /// <summary>
-        /// Texture object for drawing
+        /// A temp vector array used to draw polygons.
         /// </summary>
-        private Texture2D terrainTexture;
+        private Vector2[] tempVertices = new Vector2[MAX_VERTICES];
 
-        private Vector2[] tempVertices = new Vector2[8];
-
-
+        /// <summary>
+        /// The width of the point cloud.
+        /// </summary>
         private float _localWidth;
+
+        /// <summary>
+        /// The height of the point cloud.
+        /// </summary>
         private float _localHeight;
+
+        /// <summary>
+        /// The width in cells.
+        /// </summary>
         private int _xnum;
+
+        /// <summary>
+        /// The height in cells.
+        /// </summary>
         private int _ynum;
+
+        /// <summary>
+        /// The area to be redrawn.
+        /// </summary>
         private AABB _dirtyArea;
+
+        /// <summary>
+        /// The top left of the terrain object.
+        /// </summary>
         private Vector2 _topLeft;
 
+        /// <summary>
+        /// Terrain constructor
+        /// </summary>
+        /// <param name="world">The world to add the terrain to</param>
+        /// <param name="area">The Axis-aligned Bounding box that encapsulates the terrain</param>
         public Terrain(World world, AABB area)
         {
             World = world;
             Width = area.Extents.X * 2;
             Height = area.Extents.Y * 2;
             Center = area.Center;
+        }
+
+        /// <summary>
+        /// Creates a primitive batch used for drawing the polygons with a small amount of resource usage
+        /// </summary>
+        /// <param name="device"></param>
+        public void LoadContent(GraphicsDevice device)
+        {
+            _primitiveBatch = new PrimitiveBatch(device, 1000);
         }
 
         /// <summary>
@@ -127,6 +160,10 @@ namespace WizardsOrWhatever
             _dirtyArea = new AABB(new Vector2(float.MaxValue, float.MaxValue), new Vector2(float.MinValue, float.MinValue));
         }
 
+        /// <summary>
+        /// Randomizes the terrain using three sine waves with random seeds
+        /// </summary>
+        /// <returns></returns>
         public int[] RandomizeTerrain()
         {
             int[] terrainContour = new int[(int)_localWidth*10];
@@ -135,10 +172,9 @@ namespace WizardsOrWhatever
             double rand2 = randomizer.NextDouble() + 2;
             double rand3 = randomizer.NextDouble() + 3;
 
-            //TODO: probably want to change offset to half screen height
-            float offset = Height;
+            float offset = Height*2;
             float peakHeight = Height;
-            float flatness = 150;
+            float flatness = 100;
 
             for (int x = 0; x < (int)_localWidth*10; x++)
             {
@@ -152,67 +188,29 @@ namespace WizardsOrWhatever
         }
 
         /// <summary>
-        /// Creates a random color array for texture and applies it to the terrain
+        /// Uses RandomizeTerrain to create a contour, set the terrainMap, and generate the terrain.
         /// </summary>
         /// <param name="texture"></param>
-        public void CreateRandomTerrain(Texture2D texture, Vector2 position)
+        public void CreateRandomTerrain(Vector2 position)
         {
             int[] terrainContour = RandomizeTerrain();
-            Color[,] groundColors = TextureTo2DArray(texture);
             int width = (int)_localWidth;
             int height = (int)_localHeight;
-            colorData = new Color[width * height];
 
-            for (int x = 0; x < width; x++)
+            for (int x = (int)position.X; x < width + (int)position.X; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (int y = (int)position.Y; y < height + (int)position.Y; y++)
                 {
-                    if (y > terrainContour[x])
+                    if (y > terrainContour[x-(int)position.X])
                     {
-                        colorData[x + y * width] = groundColors[x % texture.Width, y % texture.Height];
+                        _terrainMap[x, y] = -1;
                     }
                     else
                     {
-                        colorData[x + y * width] = Color.Transparent;
+                        _terrainMap[x, y] = 1;
                     }
                 }
             }
-            terrainTexture = new Texture2D(texture.GraphicsDevice, (int)_localWidth, (int)_localHeight, false, SurfaceFormat.Color);
-            Apply(position);
-        }
-
-        public static Color[,] TextureTo2DArray(Texture2D texture)
-        {
-            Color[] colors1D = new Color[texture.Width * texture.Height];
-            texture.GetData(colors1D);
-            Color[,] colors2D = new Color[texture.Width, texture.Height];
-            for (int x = 0; x < texture.Width; x++)
-            {
-                for (int y = 0; y < texture.Height; y++)
-                {
-                    colors2D[x, y] = colors1D[x + y * texture.Width];
-                }
-            }
-            return colors2D;
-        }
-
-
-        private void Apply(Vector2 position)
-        {
-            for (int y = (int)position.Y; y < _localHeight + (int)position.Y; y++)
-            {
-                for (int x = (int)position.X; x < _localWidth + (int)position.X; x++)
-                {
-                    if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
-                    {
-                        if (colorData[((y - (int)position.Y) * (int)_localWidth) + (x - (int)position.X)].A > 0)
-                            _terrainMap[x, y] = -1;
-                        else
-                            _terrainMap[x, y] = 1;
-                    }
-                }
-            }
-
             // generate terrain
             for (int gy = 0; gy < _ynum; gy++)
             {
@@ -233,122 +231,6 @@ namespace WizardsOrWhatever
                     GenerateTerrain(gx, gy);
                 }
             }
-        }
-
-        /// <summary>
-        /// Apply a texture to the terrain.
-        /// </summary>
-        /// <param name="texture">Texture to apply.</param>
-        /// <param name="position">Top left position of the texture relative to the terrain.</param>
-        /// <param name="tester">Delegate method used to determine what colors should be included in the terrain.</param>
-        public void ApplyTexture(Texture2D texture, Vector2 position)
-        {
-            colorData = new Color[texture.Width * texture.Height];
-            terrainTexture = texture;
-            terrainTexture.GetData(colorData);
-
-            for (int y = (int)position.Y; y < texture.Height + (int)position.Y; y++)
-            {
-                for (int x = (int)position.X; x < texture.Width + (int)position.X; x++)
-                {
-                    if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
-                    {
-                        if (colorData[((y - (int)position.Y) * texture.Width) + (x - (int)position.X)].A > 0)
-                            _terrainMap[x, y] = 1;
-                        else
-                            _terrainMap[x, y] = -1;
-                    }
-                }
-            }
-
-            // generate terrain
-            for (int gy = 0; gy < _ynum; gy++)
-            {
-                for (int gx = 0; gx < _xnum; gx++)
-                {
-                    //remove old terrain object at grid cell
-                    if (_bodyMap[gx, gy] != null)
-                    {
-                        for (int i = 0; i < _bodyMap[gx, gy].Count; i++)
-                        {
-                            World.RemoveBody(_bodyMap[gx, gy][i]);
-                        }
-                    }
-
-                    _bodyMap[gx, gy] = null;
-
-                    //generate new one
-                    GenerateTerrain(gx, gy);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Apply a texture to the terrain.
-        /// </summary>
-        /// <param name="position">Top left position of the texture relative to the terrain.</param>
-        public void ApplyData(sbyte[,] data, Vector2 position)
-        {
-            for (int y = (int)position.Y; y < data.GetUpperBound(1) + (int)position.Y; y++)
-            {
-                for (int x = (int)position.X; x < data.GetUpperBound(0) + (int)position.X; x++)
-                {
-                    if (x >= 0 && x < _localWidth && y >= 0 && y < _localHeight)
-                    {
-                        _terrainMap[x, y] = data[x, y];
-                    }
-                }
-            }
-
-            // generate terrain
-            for (int gy = 0; gy < _ynum; gy++)
-            {
-                for (int gx = 0; gx < _xnum; gx++)
-                {
-                    //remove old terrain object at grid cell
-                    if (_bodyMap[gx, gy] != null)
-                    {
-                        for (int i = 0; i < _bodyMap[gx, gy].Count; i++)
-                        {
-                            World.RemoveBody(_bodyMap[gx, gy][i]);
-                        }
-                    }
-
-                    _bodyMap[gx, gy] = null;
-
-                    //generate new one
-                    GenerateTerrain(gx, gy);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Convert a texture to an sbtye array compatible with ApplyData().
-        /// </summary>
-        /// <param name="texture">Texture to convert.</param>
-        /// <param name="tester"></param>
-        /// <returns></returns>
-        public static sbyte[,] ConvertTextureToData(Texture2D texture, TerrainTester tester)
-        {
-            sbyte[,] data = new sbyte[texture.Width, texture.Height];
-            Color[] colorData = new Color[texture.Width * texture.Height];
-
-            texture.GetData(colorData);
-
-            for (int y = 0; y < texture.Height; y++)
-            {
-                for (int x = 0; x < texture.Width; x++)
-                {
-                    bool inside = tester(colorData[(y * texture.Width) + x]);
-
-                    if (!inside)
-                        data[x, y] = 1;
-                    else
-                        data[x, y] = -1;
-                }
-            }
-
-            return data;
         }
 
         /// <summary>
@@ -369,7 +251,6 @@ namespace WizardsOrWhatever
             if (p.X >= 0 && p.X < _localWidth && p.Y >= 0 && p.Y < _localHeight)
             {
                 _terrainMap[(int)p.X, (int)p.Y] = value;
-                colorData[(int)p.X + (int)p.Y * (int)_localWidth] = Color.Transparent;
 
                 // expand dirty area
                 if (p.X < _dirtyArea.LowerBound.X) _dirtyArea.LowerBound.X = p.X;
@@ -418,12 +299,17 @@ namespace WizardsOrWhatever
             _dirtyArea = new AABB(new Vector2(float.MaxValue, float.MaxValue), new Vector2(float.MinValue, float.MinValue));
         }
 
+        /// <summary>
+        /// Generates the terrain using the MarchingSquares algorithm. Stores polygons in body lists that are associated with points
+        /// </summary>
+        /// <param name="gx">the x coordinate of the body</param>
+        /// <param name="gy">the y coordinate of the body</param>
         private void GenerateTerrain(int gx, int gy)
         {
             float ax = gx * CellSize;
             float ay = gy * CellSize;
 
-            List<Vertices> polys = MarchingSquares.DetectSquares(new AABB(new Vector2(ax, ay), new Vector2(ax + CellSize, ay + CellSize)), SubCellSize, SubCellSize, _terrainMap, Iterations, true);
+            List<Vertices> polys = MarchingSquares.DetectSquares(new AABB(new Vector2(ax, ay), new Vector2(ax + CellSize, ay + CellSize)), SubCellSize, SubCellSize, _terrainMap, 2, true);
             if (polys.Count == 0) return;
 
             _bodyMap[gx, gy] = new List<Body>();
@@ -434,7 +320,6 @@ namespace WizardsOrWhatever
             // create physics object for this grid cell
             foreach (var item in polys)
             {
-                // does this need to be negative?
                 item.Scale(ref scale);
                 item.Translate(ref _topLeft);
                 item.ForceCounterClockWise();
@@ -446,65 +331,90 @@ namespace WizardsOrWhatever
                     if (poly.Count > 2)
                     {
                         _bodyMap[gx, gy].Add(BodyFactory.CreatePolygon(World, poly, 1));
-
                     }
                 }
             }
         }
 
-        // Maybe should be called from Draw and take a graphics device as a param
-        public void TextureTriangles()
+        /// <summary>
+        /// Draws the terrain by cycling through all coordinates and displaying the polygons at each.
+        /// </summary>
+        public void DrawTerrain()
         {
             for (int gy = 0; gy < _ynum; gy++)
             {
                 for (int gx = 0; gx < _xnum; gx++)
                 {
+                    if (_bodyMap[gx, gy] == null)
+                        continue;
                     foreach (Body b in _bodyMap[gx, gy])
                     {
-                        Transform xf;
-                        b.GetTransform(out xf);
-                        foreach (Fixture f in b.FixtureList) {
-                            PolygonShape poly = (PolygonShape)f.Shape;
-                            int vertexCount = poly.Vertices.Count;
-
-                            for (int i = 0; i < vertexCount; i++)
-                            {
-                                tempVertices[i] = MathUtils.Multiply(ref xf, poly.Vertices[i]);
-                            }
-                            for(int i = 1; i < vertexCount - 1; i++)
-                            {
-                                //Add Vertex 0 of type triangle list
-                                //Add Vertex i of type triangle list
-                                //Add Vertex i+1 of type triangle list
-                            }
-                            BasicEffect _effect = new BasicEffect(device);
-                            _effect.Texture = terrainTexture;
-                            _effect.TextureEnabled = true;
-                            foreach (var pass in _effect.CurrentTechnique.Passes)
-                            {
-                                pass.Apply();
-
-                                device.DrawUserIndexedPrimitives<VertexPositionTexture>
-                                (
-                                    PrimitiveType.TriangleStrip, // same result with TriangleList
-                                    tempVertices,
-                                    0,
-                                    tempVertices.Length,
-                                    new int[] { 0, 1, 2 },
-                                    0,
-                                    1
-                                );
-                            }
-                        }
+                        DrawBody(b);
                     }
                 }
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch)
+        /// <summary>
+        /// Draws a single body
+        /// </summary>
+        /// <param name="body">the body to draw</param>
+        public void DrawBody(Body body)
         {
-            terrainTexture.SetData(colorData);
-            spriteBatch.Draw(terrainTexture, _topLeft + Center, null, Color.White, 0f, new Vector2(0, 0), new Vector2(10f, 10f), SpriteEffects.None, 1f);
+            Transform xf;
+            body.GetTransform(out xf);
+            foreach (Fixture f in body.FixtureList)
+            {
+                PolygonShape poly = (PolygonShape)f.Shape;
+                int vertexCount = poly.Vertices.Count;
+
+                if (vertexCount > MAX_VERTICES)
+                    throw new Exception("Num vertices in polygon exceeds maximum number allowed");
+
+                for (int i = 0; i < vertexCount; i++)
+                    tempVertices[i] = MathUtils.Multiply(ref xf, poly.Vertices[i]);
+
+                DrawPolygon(tempVertices, vertexCount, Color.SaddleBrown);
+            }
+        }
+
+        /// <summary>
+        /// Draws a linear or triangular polygon
+        /// </summary>
+        /// <param name="vertices">The vertices list</param>
+        /// <param name="count">The number of vertices to draw</param>
+        /// <param name="color">The color used to draw the vertices</param>
+        public void DrawPolygon(Vector2[] vertices, int count, Color color)
+        {
+            if (!_primitiveBatch.IsReady())
+            {
+                throw new InvalidOperationException("BeginCustomDraw must be called before drawing anything.");
+            }
+            if (count == 2)
+            {
+                _primitiveBatch.AddVertex(vertices[0], color, PrimitiveType.LineList);
+                _primitiveBatch.AddVertex(vertices[1], color, PrimitiveType.LineList);
+                return;
+            }
+
+            for (int i = 1; i < count - 1; i++)
+            {
+                _primitiveBatch.AddVertex(vertices[0], color, PrimitiveType.TriangleList);
+                _primitiveBatch.AddVertex(vertices[i], color, PrimitiveType.TriangleList);
+                _primitiveBatch.AddVertex(vertices[i + 1], color, PrimitiveType.TriangleList);
+            }
+        }
+
+        /// <summary>
+        /// Renders the Terrain.
+        /// </summary>
+        /// <param name="projection">The projection of the camera</param>
+        /// <param name="view">The camera view</param>
+        public void RenderTerrain(ref Matrix projection, ref Matrix view)
+        {
+            _primitiveBatch.Begin(ref projection, ref view);
+            DrawTerrain();
+            _primitiveBatch.End();
         }
     }
 }

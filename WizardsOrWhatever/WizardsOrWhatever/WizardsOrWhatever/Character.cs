@@ -25,7 +25,7 @@ namespace WizardsOrWhatever
             Right
         }
 
-        public Vector2 jumpImpulse = new Vector2(0, -15);
+        public Vector2 jumpImpulse = new Vector2(0, -10);
         public float launchSpeed;
         protected CharState state = CharState.Idle;
         private const int MAXHEALTH = 1000;
@@ -35,7 +35,7 @@ namespace WizardsOrWhatever
         protected CharState prevState;
         protected CharDirection direction = CharDirection.Right;
         protected CharDirection prevDirection;
-        public int runSpeed = 10;
+        public int runSpeed = 25;
 
         public CharState State
         {

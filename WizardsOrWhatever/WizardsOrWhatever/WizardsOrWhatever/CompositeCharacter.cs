@@ -193,7 +193,6 @@ namespace WizardsOrWhatever
 
         public void Update(GameTime gameTime)
         {
-            Console.WriteLine("char at: " + this.Position);
             //HandleInput();
             currentFireTime += gameTime.ElapsedGameTime.TotalMilliseconds;
             spriteTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;

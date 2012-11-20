@@ -58,7 +58,7 @@ namespace WizardsOrWhatever
         List<Projectile> projectiles = new List<Projectile>();
 
         //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
-        List<PhysicsObject> paddles;
+        //List<PhysicsObject> paddles;
 
         //Debug View. For viewing all underlying physics components of game.
         DebugViewXNA DebugView;
@@ -77,13 +77,6 @@ namespace WizardsOrWhatever
         //Variable for the alpha transparency on pause
         float pauseAlpha;
 
-
-
-        //TODO: Look into camera controls more
-        //TODO: get MSTerrain working properly
-        //The y pos is losing accuracy at some point during run time.
-        //Debug more and figure out the location
-        //Figure out debug mode and implement new terrain.
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -94,12 +87,11 @@ namespace WizardsOrWhatever
 
             world = new World(new Vector2(0, 9.8f));
 
-            terrain = new Terrain(world, new AABB(new Vector2(10, 10), 20, 20))
+            terrain = new Terrain(world, new AABB(new Vector2(0, 25), 200, 50))
             {
                 PointsPerUnit = 10,
                 CellSize = 50,
-                SubCellSize = 5,
-                Iterations = 2
+                SubCellSize = 5
             };
             terrain.Initialize();
         }
@@ -119,22 +111,23 @@ namespace WizardsOrWhatever
             DebugView = new DebugViewXNA(world);
             DebugView.LoadContent(ScreenManager.GraphicsDevice, Content);
 
+            terrain.LoadContent(ScreenManager.GraphicsDevice);
+
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
-            //camera.Zoom = .2f;
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
             // ----------------------------------------------------------
             Texture2D terrainTex = Content.Load<Texture2D>("ground");
-            terrain.CreateRandomTerrain(terrainTex, new Vector2(0, 0));
+            terrain.CreateRandomTerrain(new Vector2(0, 0));
             //terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width-10, -170), InsideTerrainTest);
 
             font = Content.Load<SpriteFont>("font");
 
             
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(0.0f, 0.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
@@ -144,69 +137,14 @@ namespace WizardsOrWhatever
             camera.TrackingBody = player.body;
 
             //Create walls
-            ground = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 12.5f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
-            //leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-            //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
-            //rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-            //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
-            ceiling = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, 12.5f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
+            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Texture2D>("platformTex"), 
+                new Vect            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Textu      //world.AddJoint(l);
+            //world.AddJoint(r);
 
-            //Instantiate a list of paddles to be used
-            paddles = new List<PhysicsObject>();
+            //paddles.Add(trampolinePaddle);
+            //PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
 
-            // Creates a simple paddle which center is anchored
-            // in the background. It can rotate freely
-            PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
-                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, ConvertUnits.ToSimUnits(new Vector2(0, 0)),
-                ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f - 150, ScreenManager.GraphicsDevice.Viewport.Height - 300)));
-
-            paddles.Add(simplePaddle);
-
-            // Creates a motorized paddle which left side is anchored in the background
-            // it will rotate slowly but the motor is not set too strong that
-            // it can push everything away
-            PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280),
-                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, ConvertUnits.ToSimUnits(new Vector2(-48, 0)),
-                ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280)));
-
-            // rotate 1/4 of a circle per second
-            j.MotorSpeed = MathHelper.PiOver2;
-            // have little torque (power) so it can push away a few blocks
-            j.MotorTorque = 50;
-            j.MotorEnabled = true;
-            j.MaxMotorTorque = 100;
-
-            paddles.Add(motorPaddle);
-
-            // Use two line joints (a sort of springs) to create a trampoline
-            PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
-
-            l.CollideConnected = true;
-            l.Frequency = 2.0f;
-            l.DampingRatio = 0.05f;
-
-            var r = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position + new Vector2(64, 0)), Vector2.UnitY);
-
-            r.CollideConnected = true;
-            r.Frequency = 2.0f;
-            r.DampingRatio = 0.05f;
-
-            world.AddJoint(l);
-            world.AddJoint(r);
-
-            paddles.Add(trampolinePaddle);
-
-            PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
-
-            paddles.Add(staticPaddle);
+            //paddles.Add(staticPaddle);
 
             // ----------------------------------------------------------
 
@@ -387,7 +325,7 @@ namespace WizardsOrWhatever
             // This game has a blue background. Why? Because!
             ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
                                                Color.CornflowerBlue, 0, 0);
-
+            camera.Zoom = 1f;
             Matrix proj = camera.SimProjection;
             Matrix view = camera.SimView;
             DebugView.RenderDebugData(ref proj, ref view);
@@ -396,21 +334,18 @@ namespace WizardsOrWhatever
 
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.View);
-
-            terrain.Draw(spriteBatch);
-            // Draw the fps to screen
-            spriteBatch.DrawString(font, "fps: " + fps, camera.Position - new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2 - 10, ScreenManager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
-            ground.Draw(spriteBatch);
-            //leftWall.Draw(spriteBatch);
-            //rightWall.Draw(spriteBatch);
-            ceiling.Draw(spriteBatch);
+oj, ref view);            /anager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
+            //ground.Draw(spriteBatch);
+            leftWall.Draw(spriteBatch);
+            rightWall.Draw(spriteBatch);
+            //ceiling.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
 
-            foreach (PhysicsObject paddle in paddles)
-            {
-                paddle.Draw(spriteBatch);
-            }
+            //foreach (PhysicsObject paddle in paddles)
+            //{
+                //paddle.Draw(spriteBatch);
+            //}
 
             //--------NEED TO REWORK--------
             //checks to see if a player is firing through their own input, creates a projectile associated with that player.
