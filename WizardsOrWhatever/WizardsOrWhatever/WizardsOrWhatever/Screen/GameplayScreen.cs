@@ -6,7 +6,6 @@
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //-----------------------------------------------------------------------------
 #endregion
-
 #region Using Statements
 using System;
 using System.Threading;
@@ -34,6 +33,7 @@ namespace WizardsOrWhatever
     /// </summary>
     class GameplayScreen : GameScreen
     {
+        private bool Multiplayer;
         ContentManager Content;
         SpriteFont gameFont;
 
@@ -83,8 +83,9 @@ namespace WizardsOrWhatever
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameplayScreen()
+        public GameplayScreen(bool isMultiplayer)
         {
+            Multiplayer = isMultiplayer;
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
@@ -210,51 +211,7 @@ namespace WizardsOrWhatever
                 GamePadState currentState = GamePad.GetState(PlayerIndex.One);
                 KeyboardState keyboardState = Keyboard.GetState();
 
-                if (keyboardState.IsKeyDown(Keys.F1) && !lastKeyboardState.IsKeyDown(Keys.F1))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Shape);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F2) && !lastKeyboardState.IsKeyDown(Keys.F2))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.DebugPanel);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F3) && !lastKeyboardState.IsKeyDown(Keys.F3))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.PerformanceGraph);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F4) && !lastKeyboardState.IsKeyDown(Keys.F4))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.AABB);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F5) && !lastKeyboardState.IsKeyDown(Keys.F5))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.CenterOfMass);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F6) && !lastKeyboardState.IsKeyDown(Keys.F6))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Joint);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F7) && !lastKeyboardState.IsKeyDown(Keys.F7))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.ContactPoints);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F8) && !lastKeyboardState.IsKeyDown(Keys.F8))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.ContactNormals);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F9) && !lastKeyboardState.IsKeyDown(Keys.F9))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.PolygonPoints);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F10) && !lastKeyboardState.IsKeyDown(Keys.F10))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Pair);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F11) && !lastKeyboardState.IsKeyDown(Keys.F11))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Controllers);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F12) && !lastKeyboardState.IsKeyDown(Keys.F12))
+                if (keyboardState.IsKeyDown(Keys.F12) && !lastKeyboardState.IsKeyDown(Keys.F12))
                 {
                     EnableOrDisableFlags(DebugViewFlags.Shape | DebugViewFlags.Joint
                        | DebugViewFlags.AABB | DebugViewFlags.Pair | DebugViewFlags.CenterOfMass
@@ -435,6 +392,181 @@ namespace WizardsOrWhatever
             }
         }
 
+
+        #endregion
+
+        #region Networking
+
+        #if Multiplayer
+        
+        int pindex = 1;
+        TcpClient client;
+        string IP = "127.0.0.1";
+        int PORT = 1490;
+        int BUFFER_SIZE = 2048;
+        byte[] readBuffer;
+        MemoryStream readStream, writeStream;
+
+        BinaryReader reader;
+        BinaryWriter writer;
+        private void StreamReceived(IAsyncResult ar)
+        {
+            //MessageBox.Show("Message Received....Thank you for the message, server!");
+
+            int bytesRead = 0;
+
+            try
+            {
+                lock (client.GetStream())
+                {
+                    bytesRead = client.GetStream().EndRead(ar);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            if (bytesRead == 0)
+            {
+                client.Close();
+                return;
+            }
+
+            byte[] data = new byte[bytesRead];
+
+            for (int i = 0; i < bytesRead; i++)
+                data[i] = readBuffer[i];
+
+            ProcessData(data);
+
+            client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
+        }
+        private void ProcessData(byte[] data)
+        {
+            readStream.SetLength(0);
+            readStream.Position = 0;//reset data
+
+            readStream.Write(data, 0, data.Length);//read data
+            readStream.Position = 0;
+
+            Protocols p = new Protocols();
+            try
+            {
+
+
+                //p = (Protocol)reader.ReadByte();
+                p.setData(reader.ReadByte());
+                /*if (GameScreen.isExiting)
+                {
+                    System.Diagnostics.Debug.WriteLine
+                }*/
+                if (p.getData() == 1)//p == Protocol.Connected)
+                {
+                    //pindex++;
+                    System.Diagnostics.Debug.WriteLine(pindex);
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+                    if (!isPlayer2) //player2 == null)
+                    {
+                        isPlayer2 = true;
+                        ScreenManager.CharacterColor = Color.White;
+                        //Finding player2 when the game starts
+
+                        player2 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                        writeStream.Position = 0;
+                        writer.Write(p.getData());
+                        SendData(GetDataFromMemoryStream(writeStream));
+                        //pindex = pindex - 1;
+                    }/*
+                    if (pindex == 4 && player3 == null)
+                    {
+                        player3 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                        writeStream.Position = 0;
+                        writer.Write(p.getData());
+                        SendData(GetDataFromMemoryStream(writeStream));
+                    }
+                    if (pindex == 7 && player4 == null)
+                    {
+                        player4 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
+                        writeStream.Position = 0;
+                        writer.Write(p.getData());
+                        SendData(GetDataFromMemoryStream(writeStream));
+                    }*/
+                }
+
+                else if (p.getData() == 0)//p == Protocol.Disconnected)
+                {
+                    //pindex--;
+                    //System.Diagnostics.Debug.WriteLine(pindex);
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+                    isPlayer2 = false;
+                    player2.Dispose();
+                    //player2 = null;
+                }
+                else if (p.getData() == 2)
+                {
+                    float px = reader.ReadSingle();
+                    float py = reader.ReadSingle();
+                    player2.Direction = (Character.CharDirection)reader.ReadByte();
+                    player2.State = (Character.CharState)reader.ReadByte();
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+
+                    player2.Position = new Vector2(player2.Position.X + px, player2.Position.Y - py);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+        /// <summary>
+        /// Converts a MemoryStream to a byte array
+        /// </summary>
+        /// <param name="ms">MemoryStream to convert</param>
+        /// <returns>Byte array representation of the data</returns>
+        private byte[] GetDataFromMemoryStream(MemoryStream ms)
+        {
+            byte[] result;
+
+            //Async method called this, so lets lock the object to make sure other threads/async calls need to wait to use it.
+            lock (ms)
+            {
+                int bytesWritten = (int)ms.Position;
+                result = new byte[bytesWritten];
+
+                ms.Position = 0;
+                ms.Read(result, 0, bytesWritten);
+            }
+
+            return result;
+        }
+        /// <summary>
+        /// Code to actually send the data to the client
+        /// </summary>
+        /// <param name="b">Data to send</param>
+        public void SendData(byte[] b)
+        {
+            //Try to send the data.  If an exception is thrown, disconnect the client
+            try
+            {
+                lock (client.GetStream())
+                {
+                    client.GetStream().BeginWrite(b, 0, b.Length, null, null);
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+        }
+
+#endif
 
         #endregion
     }
