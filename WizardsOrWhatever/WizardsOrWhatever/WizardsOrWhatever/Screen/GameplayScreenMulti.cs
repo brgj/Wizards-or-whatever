@@ -190,7 +190,7 @@ namespace WizardsOrWhatever.Screen
 
             //Instantiate a list of paddles to be used
             paddles = new List<PhysicsObject>();
-
+            /*
             // Creates a simple paddle which center is anchored
             // in the background. It can rotate freely
             PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
@@ -242,7 +242,7 @@ namespace WizardsOrWhatever.Screen
             PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
 
             paddles.Add(staticPaddle);
-
+            */
             // ----------------------------------------------------------
 
             // Sleep for the loading screen
@@ -393,10 +393,16 @@ namespace WizardsOrWhatever.Screen
                     writer.Write((byte)2);
                     writer.Write(deltap.X);
                     writer.Write(-deltap.Y);
+                    writer.Write((byte)player.Direction);
+                    writer.Write((byte)player.State);
                     SendData(GetDataFromMemoryStream(writeStream));
                 }
 
                 player.Update(gameTime);
+                if (isPlayer2)
+                {
+                    player2.Update(gameTime);
+                }
 
                 //----------------------------------
                 lastKeyboardState = keyboardState;
@@ -630,6 +636,9 @@ namespace WizardsOrWhatever.Screen
                     if (!isPlayer2) //player2 == null)
                     {
                         isPlayer2 = true;
+                        ScreenManager.CharacterColor = Color.White;
+                        //Finding player2 when the game starts
+
                         player2 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
                         writeStream.Position = 0;
@@ -668,8 +677,11 @@ namespace WizardsOrWhatever.Screen
                 {
                     float px = reader.ReadSingle();
                     float py = reader.ReadSingle();
+                    player2.Direction = (Character.CharDirection)reader.ReadByte();
+                    player2.State = (Character.CharState)reader.ReadByte();
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
+
                     player2.Position = new Vector2(player2.Position.X + px, player2.Position.Y - py);
                 }
             }
