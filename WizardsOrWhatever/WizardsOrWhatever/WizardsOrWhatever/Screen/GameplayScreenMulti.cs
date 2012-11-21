@@ -669,6 +669,7 @@ namespace WizardsOrWhatever.Screen
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
                     isPlayer2 = false;
+                    player2.Dispose();
                     //player2 = null;
                 }
                 else if (p.getData() == 2)

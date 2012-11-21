@@ -469,5 +469,15 @@ namespace WizardsOrWhatever
                 }
             }
         }
+
+        public new void Dispose()
+        {
+            if (!IsDisposed)
+            {
+                wheel.Dispose();
+                body.Dispose();
+                IsDisposed = true;
+            }
+        }
     }
 }
