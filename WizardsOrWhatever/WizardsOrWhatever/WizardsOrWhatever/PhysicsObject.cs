@@ -9,7 +9,7 @@ using FarseerPhysics.Dynamics;
 
 namespace WizardsOrWhatever
 {
-    public class PhysicsObject
+    public class PhysicsObject : IDisposable
     {
         public Body body;
         public Vector2 Position
@@ -46,5 +46,20 @@ namespace WizardsOrWhatever
             Vector2 scale = new Vector2(Size.X / (float)texture.Width, Size.Y / (float)texture.Height);
             spriteBatch.Draw(texture, Position, new Rectangle(0, 0, texture.Width, texture.Height), Color.White, body.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), scale, SpriteEffects.None, 0);
         }
+
+        #region IDisposable Members
+
+        public bool IsDisposed { get; set; }
+
+        public void Dispose()
+        {
+            if (!IsDisposed)
+            {
+                body.Dispose();
+                IsDisposed = true;
+            }
+        }
+
+        #endregion
     }
 }

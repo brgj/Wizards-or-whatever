@@ -121,6 +121,7 @@
     <Compile Include="Camera2D.cs" />
     <Compile Include="CompositeCharacter.cs" />
     <Compile Include="ConvertUnits.cs" />
+    <Compile Include="Explosion.cs" />
     <Compile Include="PhysicsObject.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Program.cs" />

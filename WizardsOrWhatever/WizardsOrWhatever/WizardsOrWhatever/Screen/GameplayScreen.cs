@@ -34,7 +34,6 @@ namespace WizardsOrWhatever
     /// </summary>
     class GameplayScreen : GameScreen
     {
-
         ContentManager Content;
         SpriteFont gameFont;
 
@@ -45,17 +44,18 @@ namespace WizardsOrWhatever
         //Camera object that follows the character
         Camera2D camera;
         //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
-        CompositeCharacter player;
+        CompositeCharacter player, player2;
         HUD playerHUD;
 
         //Walls. Placeholders for terrain.
-        PhysicsObject ground;
         PhysicsObject leftWall;
         PhysicsObject rightWall;
-        PhysicsObject ceiling;
 
         //Projectiles
         List<Projectile> projectiles = new List<Projectile>();
+
+        //Explosions
+        List<Explosion> explosions = new List<Explosion>();
 
         //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
         //List<PhysicsObject> paddles;
@@ -76,6 +76,9 @@ namespace WizardsOrWhatever
 
         //Variable for the alpha transparency on pause
         float pauseAlpha;
+
+        Texture2D projectileTex;
+        Texture2D explosionTex;
 
         /// <summary>
         /// Constructor.
@@ -124,8 +127,9 @@ namespace WizardsOrWhatever
 
             font = Content.Load<SpriteFont>("font");
 
-            
+
             player = new CompositeCharacter(world, new Vector2(0, 0), Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+            player2 = new CompositeCharacter(world, new Vector2(0, 0), Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
@@ -139,7 +143,11 @@ namespace WizardsOrWhatever
                 new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
             rightWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(100.0f), 0), Content.Load<Texture2D>("platformTex"),
                 new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
-            
+
+            // Load projectile and explosion textures
+            projectileTex = Content.Load<Texture2D>("projectile_fire");
+            explosionTex = Content.Load<Texture2D>("explosion");
+
             // ----------------------------------------------------------
 
             // Sleep for the loading screen
@@ -177,9 +185,17 @@ namespace WizardsOrWhatever
             base.Update(gameTime, otherScreenHasFocus, false);
 
             //UPDATES EACH PROJECTILE IN THE GAME
-            foreach(Projectile projectile in projectiles)
+            foreach (Projectile projectile in projectiles)
             {
                 projectile.UpdateProjectile(gameTime);
+            }
+
+            for(int i = 0; i < explosions.Count; i++)
+            {
+                if (!explosions[i].UpdateParticles(gameTime))
+                {
+                    explosions.RemoveAt(i);
+                }
             }
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
@@ -194,12 +210,6 @@ namespace WizardsOrWhatever
                 GamePadState currentState = GamePad.GetState(PlayerIndex.One);
                 KeyboardState keyboardState = Keyboard.GetState();
 
-                //TODO: Remove this
-                if (keyboardState.IsKeyDown(Keys.X) && !lastKeyboardState.IsKeyDown(Keys.X) || currentState.Buttons.X == ButtonState.Pressed)
-                {
-                    DrawCircleOnMap(ConvertUnits.ToSimUnits(player.Position), 1);
-                    terrain.RegenerateTerrain();
-                }
                 if (keyboardState.IsKeyDown(Keys.F1) && !lastKeyboardState.IsKeyDown(Keys.F1))
                 {
                     EnableOrDisableFlags(DebugViewFlags.Shape);
@@ -323,7 +333,7 @@ namespace WizardsOrWhatever
             Matrix proj = camera.SimProjection;
             Matrix view = camera.SimView;
             DebugView.RenderDebugData(ref proj, ref view);
-            
+
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
 
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
@@ -334,6 +344,7 @@ namespace WizardsOrWhatever
             rightWall.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
+            player2.Draw(spriteBatch);
 
             //--------NEED TO REWORK--------
             //checks to see if a player is firing through their own input, creates a projectile associated with that player.
@@ -342,12 +353,12 @@ namespace WizardsOrWhatever
              * Based on this we can subtract the nessesary mana / damage / rate of fire
              * Change if statement to include players mana compared to selected spells requirement
              */
-            if(player.canFire)
+            if (player.canFire)
             {
                 if (player.Mana > 20)
                 {
                     Console.Write("POSITION: " + player.Position + " CURSOR: " + camera.ConvertScreenToWorld(playerHUD.cursorPos) + "\n");
-                    Projectile projectile = new Projectile(world, player.Position, Content.Load<Texture2D>("projectile_fire"), new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player);
+                    Projectile projectile = new Projectile(world, player.Position, projectileTex, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
                     player.Mana -= 20;
                     projectiles.Add(projectile);
                 }
@@ -359,6 +370,15 @@ namespace WizardsOrWhatever
                 projectile.Draw(spriteBatch);
             }
             //-----------------------
+
+            spriteBatch.End();
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, null, null, null, null, camera.View);
+
+            foreach (Explosion explosion in explosions)
+            {
+                explosion.Draw(spriteBatch);
+            }
 
             spriteBatch.End();
 
@@ -379,13 +399,33 @@ namespace WizardsOrWhatever
                 DebugView.AppendFlags(flags);
         }
 
-        private void DrawCircleOnMap(Vector2 center, sbyte value)
+        private void CheckCollision(Projectile p)
         {
-            for (float by = -2.5f; by < 2.5f; by += 0.1f)
+            DrawCircleOnMap(p.body.Position, p.level, 1);
+            LaunchPlayer(player2, p.Position, ConvertUnits.ToDisplayUnits(p.level));
+            LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
+            terrain.RegenerateTerrain();
+            explosions.Add(new Explosion(explosionTex, p.level, p.Position));
+            projectiles.Remove(p);
+        }
+
+        private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius)
+        {
+            if (player.Position.X > origin.X - radius && player.Position.Y > origin.Y - radius && player.Position.X < origin.X + radius && player.Position.Y < origin.Y + radius)
             {
-                for (float bx = -2.5f; bx < 2.5f; bx += 0.1f)
+                Vector2 force = player.Position - origin;
+                force = Vector2.Normalize(force) * 10;
+                player.body.ApplyLinearImpulse(force);
+            }
+        }
+
+        private void DrawCircleOnMap(Vector2 center, float radius, sbyte value)
+        {
+            for (float by = -radius; by < radius; by += 0.1f)
+            {
+                for (float bx = -radius; bx < radius; bx += 0.1f)
                 {
-                    if ((bx * bx) + (by * by) < 2.5f * 2.5f)
+                    if ((bx * bx) + (by * by) < radius * radius)
                     {
                         float ax = bx + center.X;
                         float ay = by + center.Y;

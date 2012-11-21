@@ -13,23 +13,21 @@ using FarseerPhysics.Factories;
 
 namespace WizardsOrWhatever
 {
+    public delegate void CheckCollision(Projectile p);
+
     public class Projectile : PhysicsObject
     {
-
-        public Vector2 position;
-        public Vector2 velocity;
         public Vector2 cursPosition;
-        public Vector2 direction;
         public Vector2 movements;
         public float speed = 500;
+        private CheckCollision collisionChecker;
+        public float level = 1.5f;
 
-        public bool isVisible;
-
-        public Projectile(World world, Vector2 position, Texture2D texture, Vector2 size, Vector2 cursPosition, CompositeCharacter player)
+        public Projectile(World world, Vector2 position, Texture2D texture, Vector2 size, Vector2 cursPosition, CompositeCharacter player, CheckCollision collisionChecker)
             : base(world, position, texture, size, 0f)
         {
+            this.collisionChecker = collisionChecker;
             this.cursPosition = cursPosition;
-            this.position = position;
             movements = cursPosition - position;
             if (movements != Vector2.Zero)
             {
@@ -48,15 +46,15 @@ namespace WizardsOrWhatever
             body.OnCollision += new OnCollisionEventHandler(OnProjectileCollision);
         }
 
-        public void UpdateProjectile(GameTime gametime)
+        public void UpdateProjectile(GameTime gameTime)
         {
-            Position += movements * speed * (float)gametime.ElapsedGameTime.TotalSeconds;
+            Position += movements * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
         public bool OnProjectileCollision(Fixture fix1, Fixture fix2, Contact contact)
         {
-            Console.WriteLine(fix1.Body.Position);
-            Console.WriteLine(fix2.Body.Position);
+            collisionChecker(this);
+            this.Dispose();
             return true;
         }
     }
