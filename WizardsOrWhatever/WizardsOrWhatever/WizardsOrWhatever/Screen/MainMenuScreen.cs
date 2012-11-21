@@ -69,7 +69,7 @@ namespace WizardsOrWhatever
         void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             LoadingScreen.Load(ScreenManager, true, e.PlayerIndex,
-                               new GameplayScreen(false));
+                               new GameplayScreen());
         }
 
 

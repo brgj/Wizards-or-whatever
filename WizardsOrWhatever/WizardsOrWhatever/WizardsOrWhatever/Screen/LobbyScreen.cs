@@ -20,7 +20,7 @@ namespace WizardsOrWhatever.Screen
         }
         void JoinGameSelected(object sender, PlayerIndexEventArgs e)
         {
-            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, new GameplayScreen(true));
+            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex, new GameplayScreenMulti());
         }
     }
 }
