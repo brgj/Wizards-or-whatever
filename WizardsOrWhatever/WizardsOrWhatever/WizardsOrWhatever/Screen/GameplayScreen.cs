@@ -78,6 +78,8 @@ namespace WizardsOrWhatever
         float pauseAlpha;
 
         Texture2D projectileTex;
+        Texture2D projectileTex2;
+        Texture2D projectileTex3;
         Texture2D explosionTex;
 
         /// <summary>
@@ -146,6 +148,8 @@ namespace WizardsOrWhatever
 
             // Load projectile and explosion textures
             projectileTex = Content.Load<Texture2D>("projectile_fire");
+            projectileTex2 = Content.Load<Texture2D>("projectile_fire2");
+            projectileTex3 = Content.Load<Texture2D>("projectile_fire3");
             explosionTex = Content.Load<Texture2D>("explosion");
 
             // ----------------------------------------------------------
@@ -210,51 +214,7 @@ namespace WizardsOrWhatever
                 GamePadState currentState = GamePad.GetState(PlayerIndex.One);
                 KeyboardState keyboardState = Keyboard.GetState();
 
-                if (keyboardState.IsKeyDown(Keys.F1) && !lastKeyboardState.IsKeyDown(Keys.F1))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Shape);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F2) && !lastKeyboardState.IsKeyDown(Keys.F2))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.DebugPanel);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F3) && !lastKeyboardState.IsKeyDown(Keys.F3))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.PerformanceGraph);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F4) && !lastKeyboardState.IsKeyDown(Keys.F4))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.AABB);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F5) && !lastKeyboardState.IsKeyDown(Keys.F5))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.CenterOfMass);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F6) && !lastKeyboardState.IsKeyDown(Keys.F6))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Joint);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F7) && !lastKeyboardState.IsKeyDown(Keys.F7))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.ContactPoints);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F8) && !lastKeyboardState.IsKeyDown(Keys.F8))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.ContactNormals);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F9) && !lastKeyboardState.IsKeyDown(Keys.F9))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.PolygonPoints);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F10) && !lastKeyboardState.IsKeyDown(Keys.F10))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Pair);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F11) && !lastKeyboardState.IsKeyDown(Keys.F11))
-                {
-                    EnableOrDisableFlags(DebugViewFlags.Controllers);
-                }
-                else if (keyboardState.IsKeyDown(Keys.F12) && !lastKeyboardState.IsKeyDown(Keys.F12))
+                if (keyboardState.IsKeyDown(Keys.F12) && !lastKeyboardState.IsKeyDown(Keys.F12))
                 {
                     EnableOrDisableFlags(DebugViewFlags.Shape | DebugViewFlags.Joint
                        | DebugViewFlags.AABB | DebugViewFlags.Pair | DebugViewFlags.CenterOfMass
