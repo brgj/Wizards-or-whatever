@@ -306,6 +306,7 @@ namespace WizardsOrWhatever
         private class Input
         {
             CompositeCharacter player;
+            int previousScroll;
             public Input(CompositeCharacter character)
             {
                 player = character;
@@ -314,10 +315,44 @@ namespace WizardsOrWhatever
             public void KeyboardInput()
             {
                 KeyboardState keyboardState = Keyboard.GetState();
+                MouseState mouse = Mouse.GetState();
                 //Firing, seperate to fire at any time
                 if (keyboardState.IsKeyDown(Keys.Space))
                 {
                     player.isFiring = true;
+                }
+
+                if (mouse.ScrollWheelValue != previousScroll)
+                {
+                    if (mouse.ScrollWheelValue > previousScroll)
+                    {
+                        int curr = (int)player.Weapon;
+                        //get size of enum
+                        if (curr == Enum.GetValues(typeof(WeaponSelect)).Length - 1)
+                        {
+                            player.Weapon = 0;
+                            previousScroll = mouse.ScrollWheelValue;
+                        }
+                        else
+                        {
+                            player.Weapon = (WeaponSelect)(curr + 1);
+                            previousScroll = mouse.ScrollWheelValue;
+                        }
+                    }
+                    else
+                    {
+                        int curr = (int)player.Weapon;
+                        if (curr == 0)
+                        {
+                            player.Weapon = (WeaponSelect)(Enum.GetValues(typeof(WeaponSelect)).Length - 1);
+                            previousScroll = mouse.ScrollWheelValue;
+                        }
+                        else
+                        {
+                            player.Weapon = (WeaponSelect)(curr - 1);
+                            previousScroll = mouse.ScrollWheelValue;
+                        }
+                    }
                 }
 
                 if (player.State == Character.CharState.Wallslide)
@@ -467,6 +502,15 @@ namespace WizardsOrWhatever
                     player.body.LinearVelocity = new Vector2(player.launchSpeed, player.body.LinearVelocity.Y);
                     Jump();
                 }
+            }
+        }
+        public new void Dispose()
+        {
+            if (!IsDisposed)
+            {
+                wheel.Dispose();
+                body.Dispose();
+                IsDisposed = true;
             }
         }
     }

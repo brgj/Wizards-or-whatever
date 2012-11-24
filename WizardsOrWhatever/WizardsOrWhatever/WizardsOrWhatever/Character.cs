@@ -25,9 +25,17 @@ namespace WizardsOrWhatever
             Right
         }
 
+        public enum WeaponSelect
+        {
+            Yellow,
+            Blue,
+            Red
+        }
+
         public Vector2 jumpImpulse = new Vector2(0, -5);
         public float launchSpeed;
         protected CharState state = CharState.Idle;
+        protected WeaponSelect weapon = WeaponSelect.Yellow;
         private const int MAXHEALTH = 1000;
         private const int MAXMANA = 100;
         private int health = 1000;
@@ -47,6 +55,18 @@ namespace WizardsOrWhatever
             {
                 prevState = state;
                 state = value;
+            }
+        }
+
+        public WeaponSelect Weapon
+        {
+            get
+            {
+                return weapon;
+            }
+            set
+            {
+                weapon = value;
             }
         }
 

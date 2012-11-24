@@ -385,16 +385,15 @@ namespace WizardsOrWhatever.Screen
                 Vector2 nPosition = new Vector2(player.Position.X, player.Position.Y);
 
                 Vector2 deltap = Vector2.Subtract(nPosition, iPosition);
-                if (deltap != Vector2.Zero)
-                {
+                
                     writeStream.Position = 0;
                     writer.Write((byte)2);
-                    writer.Write(deltap.X);
-                    writer.Write(-deltap.Y);
+                    writer.Write(player.Position.X);
+                    writer.Write(player.Position.Y);
                     writer.Write((byte)player.Direction);
                     writer.Write((byte)player.State);
                     SendData(GetDataFromMemoryStream(writeStream));
-                }
+                
 
                 player.Update(gameTime);
                 if (isPlayer2)
@@ -669,6 +668,7 @@ namespace WizardsOrWhatever.Screen
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
                     isPlayer2 = false;
+                    player2.Dispose();
                     //player2 = null;
                 }
                 else if (p.getData() == 2)
@@ -680,7 +680,7 @@ namespace WizardsOrWhatever.Screen
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
 
-                    player2.Position = new Vector2(player2.Position.X + px, player2.Position.Y - py);
+                    player2.Position = new Vector2(px, py);
                 }
             }
             catch (Exception e)
