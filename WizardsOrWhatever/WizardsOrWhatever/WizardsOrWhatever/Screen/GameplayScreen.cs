@@ -355,7 +355,6 @@ namespace WizardsOrWhatever
             camera.Zoom = 1f;
             Matrix proj = camera.SimProjection;
             Matrix view = camera.SimView;
-            DebugView.RenderDebugData(ref proj, ref view);
 
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
 
@@ -408,6 +407,8 @@ namespace WizardsOrWhatever
             }
 
             spriteBatch.End();
+
+            DebugView.RenderDebugData(ref proj, ref view);
 
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || pauseAlpha > 0)
