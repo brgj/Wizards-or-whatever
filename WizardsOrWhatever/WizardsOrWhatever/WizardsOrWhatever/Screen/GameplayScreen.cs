@@ -38,7 +38,7 @@ namespace WizardsOrWhatever
         SpriteFont gameFont;
 
         // Backgrounds
-        GameBackground skyLayer, veggiesLayer, groundLayer;
+        GameBackground skyLayer;
 
         //The world object that encapsulates all physics objects
         World world;
@@ -128,32 +128,13 @@ namespace WizardsOrWhatever
 
             // Back ground stuff --------------------------------
             List<Texture2D> list = new List<Texture2D>();
-            list.Add(ScreenManager.Game.Content.Load<Texture2D>("Sky"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("GBackground"));
             skyLayer = new GameBackground(list, camera.Position)
             {
                 Height = ScreenManager.GraphicsDevice.Viewport.Height,
                 Width = ScreenManager.GraphicsDevice.Viewport.Width,
                 SpeedX = 0.3f
             };
-
-            list = new List<Texture2D>();
-            list.Add(ScreenManager.Game.Content.Load<Texture2D>("veggies"));
-            veggiesLayer = new GameBackground(list, camera.Position)
-            {
-                Height = ScreenManager.GraphicsDevice.Viewport.Height,
-                Width = ScreenManager.GraphicsDevice.Viewport.Width,
-                SpeedX = 1f
-            };
-
-            list = new List<Texture2D>();
-            list.Add(ScreenManager.Game.Content.Load<Texture2D>("groundf"));
-            groundLayer = new GameBackground(list, camera.Position)
-            {
-                Height = ScreenManager.GraphicsDevice.Viewport.Height,
-                Width = ScreenManager.GraphicsDevice.Viewport.Width,
-                SpeedX = 3f
-            };
-
             //---------------------------------------------------
 
 
@@ -223,9 +204,6 @@ namespace WizardsOrWhatever
 
             // updating the position of the background.
             skyLayer.Move(player.Position);
-            veggiesLayer.Move(player.Position);
-            groundLayer.Move(player.Position);
-
 
             //UPDATES EACH PROJECTILE IN THE GAME
             foreach (Projectile projectile in projectiles)
@@ -386,10 +364,6 @@ namespace WizardsOrWhatever
 
             // Draws the game background. 
             skyLayer.Draw(spriteBatch);
-            veggiesLayer.Draw(spriteBatch);
-            groundLayer.Draw(spriteBatch);
-            
-            
 
             leftWall.Draw(spriteBatch);
             rightWall.Draw(spriteBatch);
