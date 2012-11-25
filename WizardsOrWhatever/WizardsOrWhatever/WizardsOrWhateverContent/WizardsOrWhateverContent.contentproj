@@ -150,6 +150,30 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="groundf.png">
+      <Name>groundf</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Sky.png">
+      <Name>Sky</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="veggies.png">
+      <Name>veggies</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Box.png">
+      <Name>Box</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="projectile_fire3.png">
       <Name>projectile_fire3</Name>
       <Importer>TextureImporter</Importer>
@@ -159,20 +183,6 @@
   <ItemGroup>
     <Compile Include="projectile_fire2.png">
       <Name>projectile_fire2</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Projectile_Select.png">
-      <Name>Projectile_Select</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Box.png">
-      <Name>Box</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>

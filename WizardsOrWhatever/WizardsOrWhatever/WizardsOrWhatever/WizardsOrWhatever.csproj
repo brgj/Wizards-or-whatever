@@ -122,6 +122,7 @@
     <Compile Include="CompositeCharacter.cs" />
     <Compile Include="ConvertUnits.cs" />
     <Compile Include="Explosion.cs" />
+    <Compile Include="GameBackground.cs" />
     <Compile Include="PhysicsObject.cs" />
     <Compile Include="Character.cs" />
     <Compile Include="Program.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Screen Management\ScreenManager.cs" />
     <Compile Include="StaticPhysicsObject.cs" />
     <Compile Include="Terrain.cs" />
+    <Compile Include="TextureDetails.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

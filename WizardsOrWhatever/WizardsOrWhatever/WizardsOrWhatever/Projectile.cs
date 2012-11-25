@@ -33,6 +33,7 @@ namespace WizardsOrWhatever
             {
                 movements.Normalize();
             }
+            
             float angle = (float)Math.Atan2( movements.Y, movements.X );
             movements = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
 

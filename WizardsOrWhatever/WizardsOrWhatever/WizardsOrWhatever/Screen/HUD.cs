@@ -56,7 +56,8 @@ namespace WizardsOrWhatever
         /// <summary>
         /// Constructor.
         /// </summary>
-        public HUD(Game game, Character player, ContentManager content, SpriteBatch spriteBatch) : base(game)
+        public HUD(Game game, Character player, ContentManager content, SpriteBatch spriteBatch)
+            : base(game)
         {
             this.game = game;
             this.player = player;
@@ -112,7 +113,7 @@ namespace WizardsOrWhatever
                  new Rectangle(0, 45, health.Width, 14), healthStatus);
 
             spriteBatch.Draw(health, new Rectangle(15,
-                        15, health.Width, 14), new Rectangle(0, 0, health.Width, 14), Color.White); 
+                        15, health.Width, 14), new Rectangle(0, 0, health.Width, 14), Color.White);
 
 
             //Draw the mana bar relative to players mana
@@ -133,15 +134,15 @@ namespace WizardsOrWhatever
             if (player.Weapon == Character.WeaponSelect.Yellow)
             {
                 //Use the rectangle position to get an object in the center of the box
-                spriteBatch.Draw(projectileIcon, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White); 
+                spriteBatch.Draw(projectileIcon, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
             else if (player.Weapon == Character.WeaponSelect.Blue)
             {
-                spriteBatch.Draw(projectileIcon2, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White); 
+                spriteBatch.Draw(projectileIcon2, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
-            else if(player.Weapon == Character.WeaponSelect.Red)
+            else if (player.Weapon == Character.WeaponSelect.Red)
             {
-                spriteBatch.Draw(projectileIcon3, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White); 
+                spriteBatch.Draw(projectileIcon3, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
 
             spriteBatch.End();
