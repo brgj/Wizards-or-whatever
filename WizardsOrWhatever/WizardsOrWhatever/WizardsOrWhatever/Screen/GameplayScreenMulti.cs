@@ -1,6 +1,15 @@
-﻿#region Using Statements
-using System.IO;
+﻿#region File Description
+//-----------------------------------------------------------------------------
+// GameplayScreen.cs
+//
+// Microsoft XNA Community Game Platform
+// Copyright (C) Microsoft Corporation. All rights reserved.
+//-----------------------------------------------------------------------------
+#endregion
+
+#region Using Statements
 using System;
+using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -21,22 +30,26 @@ using System.Net;
 using System.Net.Sockets;
 #endregion
 
-namespace WizardsOrWhatever.Screen
+namespace WizardsOrWhatever
 {
+    /// <summary>
+    /// This screen implements the actual game logic.
+    /// </summary>
     class GameplayScreenMulti : GameScreen
     {
-
         ContentManager Content;
         SpriteFont gameFont;
 
+        // Backgrounds
+        GameBackground skyLayer;
+
         //The world object that encapsulates all physics objects
         World world;
-        MSTerrain terrain;
+        Terrain terrain;
 
         //Camera object that follows the character
         Camera2D camera;
         //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
-        //List<CompositeCharacter> Players;
         CompositeCharacter player;
         CompositeCharacter player2;
         CompositeCharacter player3;
@@ -47,16 +60,17 @@ namespace WizardsOrWhatever.Screen
         HUD playerHUD4;
 
         //Walls. Placeholders for terrain.
-        PhysicsObject ground;
         PhysicsObject leftWall;
         PhysicsObject rightWall;
-        PhysicsObject ceiling;
-        bool isPlayer2 = false;
+
         //Projectiles
         List<Projectile> projectiles = new List<Projectile>();
 
+        //Explosions
+        List<Explosion> explosions = new List<Explosion>();
+
         //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
-        List<PhysicsObject> paddles;
+        //List<PhysicsObject> paddles;
 
         //Debug View. For viewing all underlying physics components of game.
         DebugViewXNA DebugView;
@@ -75,11 +89,12 @@ namespace WizardsOrWhatever.Screen
         //Variable for the alpha transparency on pause
         float pauseAlpha;
 
-        //TODO: Look into camera controls more
-        //TODO: get MSTerrain working properly
-        //The y pos is losing accuracy at some point during run time.
-        //Debug more and figure out the location
-        //Figure out debug mode and implement new terrain.
+        Texture2D projectileTex;
+        Texture2D explosionTex;
+
+
+        bool isPlayer2 = false;
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -88,21 +103,15 @@ namespace WizardsOrWhatever.Screen
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
-
-
-
             world = new World(new Vector2(0, 9.8f));
 
-            terrain = new MSTerrain(world, new AABB(new Vector2(0, 0), 80, 80))
+            terrain = new Terrain(world, new AABB(new Vector2(0, 25), 200, 50))
             {
                 PointsPerUnit = 10,
                 CellSize = 50,
-                SubCellSize = 5,
-                Decomposer = Decomposer.Earclip,
-                Iterations = 2
+                SubCellSize = 5
             };
             terrain.Initialize();
-
         }
 
 
@@ -118,9 +127,6 @@ namespace WizardsOrWhatever.Screen
 
             reader = new BinaryReader(readStream);
             writer = new BinaryWriter(writeStream);
-
-
-
             if (Content == null)
                 Content = new ContentManager(ScreenManager.Game.Services, "Content");
 
@@ -129,16 +135,31 @@ namespace WizardsOrWhatever.Screen
             DebugView = new DebugViewXNA(world);
             DebugView.LoadContent(ScreenManager.GraphicsDevice, Content);
 
+            terrain.LoadContent(ScreenManager.GraphicsDevice);
+
             //Create camera using current viewport. Track a body without rotation.
             camera = new Camera2D(ScreenManager.GraphicsDevice);
 
             gameFont = Content.Load<SpriteFont>("gamefont");
 
-            // ----------------------------------------------------------
-            Texture2D terrainTex = Content.Load<Texture2D>("Terrain");
-            terrain.ApplyTexture(terrainTex, new Vector2(terrainTex.Width - 10, -170), InsideTerrainTest);
+
+            // Back ground stuff --------------------------------
+            List<Texture2D> list = new List<Texture2D>();
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("GBackground"));
+            skyLayer = new GameBackground(list, camera.Position)
+            {
+                Height = ScreenManager.GraphicsDevice.Viewport.Height,
+                Width = ScreenManager.GraphicsDevice.Viewport.Width,
+                SpeedX = 0.3f
+            };
+            //---------------------------------------------------
+
+
+            Texture2D terrainTex = Content.Load<Texture2D>("ground");
+            terrain.CreateRandomTerrain(new Vector2(0, 0));
 
             font = Content.Load<SpriteFont>("font");
+
 
             //Create player
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
@@ -161,86 +182,22 @@ namespace WizardsOrWhatever.Screen
             client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
 
 
-            /*if (player3 != null)
-            {
-                playerHUD3 = new HUD(ScreenManager.Game, player3, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
 
-                ScreenManager.Game.Components.Add(playerHUD3);
-            }
-            if (player4 != null)
-            {
-                playerHUD4 = new HUD(ScreenManager.Game, player4, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
-
-                ScreenManager.Game.Components.Add(playerHUD4);
-            }*/
             // Set camera to track player
             camera.TrackingBody = player.body;
 
             //Create walls
-            ground = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 12.5f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
-            //leftWall = new StaticPhysicsObject(world, new Vector2(12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-            //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
-            //rightWall = new StaticPhysicsObject(world, new Vector2(GraphicsDevice.Viewport.Width - 12.5f, GraphicsDevice.Viewport.Height / 2.0f),
-            //Content.Load<Texture2D>("platformTex"), new Vector2(25.0f, GraphicsDevice.Viewport.Height));
-            ceiling = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, 12.5f),
-                Content.Load<Texture2D>("platformTex"), new Vector2(ScreenManager.GraphicsDevice.Viewport.Width, 25.0f));
+            leftWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(-100.0f), 0), Content.Load<Texture2D>("platformTex"),
+                new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
+            rightWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(100.0f), 0), Content.Load<Texture2D>("platformTex"),
+                new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
 
-            //Instantiate a list of paddles to be used
-            paddles = new List<PhysicsObject>();
-            /*
-            // Creates a simple paddle which center is anchored
-            // in the background. It can rotate freely
-            PhysicsObject simplePaddle = new PhysicsObject(world, new Vector2(),
-                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
+            // Load projectile and explosion textures
+            projectileTex = Content.Load<Texture2D>("projectile_fire");
+            explosionTex = Content.Load<Texture2D>("explosion");
 
-            JointFactory.CreateFixedRevoluteJoint(world, simplePaddle.body, ConvertUnits.ToSimUnits(new Vector2(0, 0)),
-                ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f - 150, ScreenManager.GraphicsDevice.Viewport.Height - 300)));
 
-            paddles.Add(simplePaddle);
 
-            // Creates a motorized paddle which left side is anchored in the background
-            // it will rotate slowly but the motor is not set too strong that
-            // it can push everything away
-            PhysicsObject motorPaddle = new PhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280),
-                Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            var j = JointFactory.CreateFixedRevoluteJoint(world, motorPaddle.body, ConvertUnits.ToSimUnits(new Vector2(-48, 0)),
-                ConvertUnits.ToSimUnits(new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height - 280)));
-
-            // rotate 1/4 of a circle per second
-            j.MotorSpeed = MathHelper.PiOver2;
-            // have little torque (power) so it can push away a few blocks
-            j.MotorTorque = 50;
-            j.MotorEnabled = true;
-            j.MaxMotorTorque = 100;
-
-            paddles.Add(motorPaddle);
-
-            // Use two line joints (a sort of springs) to create a trampoline
-            PhysicsObject trampolinePaddle = new PhysicsObject(world, new Vector2(600, ground.Position.Y - 175), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16), 10);
-
-            var l = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position - new Vector2(64, 0)), Vector2.UnitY);
-
-            l.CollideConnected = true;
-            l.Frequency = 2.0f;
-            l.DampingRatio = 0.05f;
-
-            var r = JointFactory.CreateLineJoint(ground.body, trampolinePaddle.body, ConvertUnits.ToSimUnits(trampolinePaddle.Position + new Vector2(64, 0)), Vector2.UnitY);
-
-            r.CollideConnected = true;
-            r.Frequency = 2.0f;
-            r.DampingRatio = 0.05f;
-
-            world.AddJoint(l);
-            world.AddJoint(r);
-
-            paddles.Add(trampolinePaddle);
-
-            PhysicsObject staticPaddle = new StaticPhysicsObject(world, new Vector2(250, ground.Position.Y - 72), Content.Load<Texture2D>("Paddle"), new Vector2(128, 16));
-
-            paddles.Add(staticPaddle);
-            */
             // ----------------------------------------------------------
 
             // Sleep for the loading screen
@@ -264,12 +221,14 @@ namespace WizardsOrWhatever.Screen
             //player2 = null;
             ScreenManager.Game.Components.Remove(playerHUD);
             //ScreenManager.Game.Components.Remove(playerHUD2);
+            ScreenManager.Game.Components.Remove(playerHUD);
             Content.Unload();
         }
 
         #region Update and Draw
 
 
+        //TODO: Move the Update and HandleInput methods together
         /// <summary>
         /// Updates the state of the game. This method checks the GameScreen.IsActive
         /// property, so the game will stop updating when the pause menu is active,
@@ -278,7 +237,6 @@ namespace WizardsOrWhatever.Screen
         public override void Update(GameTime gameTime, bool otherScreenHasFocus,
                                                        bool coveredByOtherScreen)
         {
-
             //-------------------------------------
 
 
@@ -289,7 +247,25 @@ namespace WizardsOrWhatever.Screen
 
 
             //-----------------------------------
+
             base.Update(gameTime, otherScreenHasFocus, false);
+
+            // updating the position of the background.
+            skyLayer.Move(player.Position);
+
+            //UPDATES EACH PROJECTILE IN THE GAME
+            foreach (Projectile projectile in projectiles)
+            {
+                projectile.UpdateProjectile(gameTime);
+            }
+
+            for (int i = 0; i < explosions.Count; i++)
+            {
+                if (!explosions[i].UpdateParticles(gameTime))
+                {
+                    explosions.RemoveAt(i);
+                }
+            }
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
@@ -303,12 +279,7 @@ namespace WizardsOrWhatever.Screen
                 GamePadState currentState = GamePad.GetState(PlayerIndex.One);
                 KeyboardState keyboardState = Keyboard.GetState();
 
-                //TODO: Remove this
-                if (keyboardState.IsKeyDown(Keys.X) && !lastKeyboardState.IsKeyDown(Keys.X) || currentState.Buttons.X == ButtonState.Pressed)
-                {
-                    DrawCircleOnMap(ConvertUnits.ToSimUnits(player.Position), 1);
-                    terrain.RegenerateTerrain();
-                }
+                #region Debug Keys
                 if (keyboardState.IsKeyDown(Keys.F1) && !lastKeyboardState.IsKeyDown(Keys.F1))
                 {
                     EnableOrDisableFlags(DebugViewFlags.Shape);
@@ -361,6 +332,7 @@ namespace WizardsOrWhatever.Screen
                        | DebugViewFlags.ContactNormals | DebugViewFlags.PolygonPoints
                        | DebugViewFlags.PerformanceGraph | DebugViewFlags.Controllers);
                 }
+                #endregion
 
                 if (currentState.IsConnected)
                 {
@@ -373,6 +345,7 @@ namespace WizardsOrWhatever.Screen
 
                 player.Update(gameTime);
                 camera.Update(gameTime);
+
                 //Notifies the world that time has progressed.
                 //Collision detection, integration, and constraint solution are performed
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
@@ -403,6 +376,8 @@ namespace WizardsOrWhatever.Screen
                 }
 
                 //----------------------------------
+
+
                 lastKeyboardState = keyboardState;
             }
         }
@@ -433,33 +408,6 @@ namespace WizardsOrWhatever.Screen
             {
                 ScreenManager.AddScreen(new PauseMenuScreen(), ControllingPlayer);
             }
-            //else
-            //{
-            //    // Otherwise move the player position.
-            //    Vector2 movement = Vector2.Zero;
-
-            //    if (keyboardState.IsKeyDown(Keys.Left))
-            //        movement.X--;
-
-            //    if (keyboardState.IsKeyDown(Keys.Right))
-            //        movement.X++;
-
-            //    if (keyboardState.IsKeyDown(Keys.Up))
-            //        movement.Y--;
-
-            //    if (keyboardState.IsKeyDown(Keys.Down))
-            //        movement.Y++;
-
-            //    Vector2 thumbstick = gamePadState.ThumbSticks.Left;
-
-            //    movement.X += thumbstick.X;
-            //    movement.Y -= thumbstick.Y;
-
-            //    if (movement.Length() > 1)
-            //        movement.Normalize();
-
-            //    playerPosition += movement * 2;
-            //}
         }
 
 
@@ -480,22 +428,21 @@ namespace WizardsOrWhatever.Screen
             // This game has a blue background. Why? Because!
             ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
                                                Color.CornflowerBlue, 0, 0);
-
+            camera.Zoom = 1f;
             Matrix proj = camera.SimProjection;
             Matrix view = camera.SimView;
-            DebugView.RenderDebugData(ref proj, ref view);
 
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
 
             //Begins spriteBatch with the default sort mode, alpha blending on sprites, and a camera.
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, camera.View);
 
-            // Draw the fps to screen
-            spriteBatch.DrawString(font, "fps: " + fps, camera.Position - new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2 - 10, ScreenManager.GraphicsDevice.Viewport.Height / 2 - 10), Color.White);
-            ground.Draw(spriteBatch);
-            //leftWall.Draw(spriteBatch);
-            //rightWall.Draw(spriteBatch);
-            ceiling.Draw(spriteBatch);
+            // Draws the game background. 
+            skyLayer.Draw(spriteBatch);
+
+            leftWall.Draw(spriteBatch);
+            rightWall.Draw(spriteBatch);
+
             if (player != null)
             {
                 player.Draw(spriteBatch);
@@ -512,11 +459,46 @@ namespace WizardsOrWhatever.Screen
             {
                 player4.Draw(spriteBatch);
             }*/
-            foreach (PhysicsObject paddle in paddles)
+
+
+            //--------NEED TO REWORK--------
+            //checks to see if a player is firing through their own input, creates a projectile associated with that player.
+            /* TODO:
+             * Need to add projectile types, this means that it will select a players selected weapon and pass it into projectile.
+             * Based on this we can subtract the nessesary mana / damage / rate of fire
+             * Change if statement to include players mana compared to selected spells requirement
+             */
+            if (player.canFire)
             {
-                paddle.Draw(spriteBatch);
+                if (player.Mana > 20)
+                {
+                    Console.Write("POSITION: " + player.Position + " CURSOR: " + camera.ConvertScreenToWorld(playerHUD.cursorPos) + "\n");
+                    Projectile projectile = new Projectile(world, player.Position, projectileTex, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                    player.Mana -= 20;
+                    projectiles.Add(projectile);
+                }
+                player.canFire = false;
             }
+
+            foreach (PhysicsObject projectile in projectiles)
+            {
+                projectile.Draw(spriteBatch);
+            }
+            //-----------------------
+
             spriteBatch.End();
+            terrain.RenderTerrain(ref proj, ref view);
+
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, null, null, null, null, camera.View);
+
+            foreach (Explosion explosion in explosions)
+            {
+                explosion.Draw(spriteBatch);
+            }
+
+            spriteBatch.End();
+
+            DebugView.RenderDebugData(ref proj, ref view);
 
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || pauseAlpha > 0)
@@ -527,16 +509,6 @@ namespace WizardsOrWhatever.Screen
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="color"></param>
-        /// <returns></returns>
-        private bool InsideTerrainTest(Color color)
-        {
-            return color == Color.Black;
-        }
-
         private void EnableOrDisableFlags(DebugViewFlags flags)
         {
             if ((DebugView.Flags & flags) != 0)
@@ -544,13 +516,34 @@ namespace WizardsOrWhatever.Screen
             else
                 DebugView.AppendFlags(flags);
         }
-        private void DrawCircleOnMap(Vector2 center, sbyte value)
+
+        private void CheckCollision(Projectile p)
         {
-            for (float by = -2.5f; by < 2.5f; by += 0.1f)
+            DrawCircleOnMap(p.body.Position, p.level, 1);
+            LaunchPlayer(player2, p.Position, ConvertUnits.ToDisplayUnits(p.level));
+            LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
+            terrain.RegenerateTerrain();
+            explosions.Add(new Explosion(explosionTex, p.level, p.Position));
+            projectiles.Remove(p);
+        }
+
+        private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius)
+        {
+            if (player.Position.X > origin.X - radius && player.Position.Y > origin.Y - radius && player.Position.X < origin.X + radius && player.Position.Y < origin.Y + radius)
             {
-                for (float bx = -2.5f; bx < 2.5f; bx += 0.1f)
+                Vector2 force = player.Position - origin;
+                force = Vector2.Normalize(force) * 10;
+                player.body.ApplyLinearImpulse(force);
+            }
+        }
+
+        private void DrawCircleOnMap(Vector2 center, float radius, sbyte value)
+        {
+            for (float by = -radius; by < radius; by += 0.1f)
+            {
+                for (float bx = -radius; bx < radius; bx += 0.1f)
                 {
-                    if ((bx * bx) + (by * by) < 2.5f * 2.5f)
+                    if ((bx * bx) + (by * by) < radius * radius)
                     {
                         float ax = bx + center.X;
                         float ay = by + center.Y;
@@ -562,6 +555,7 @@ namespace WizardsOrWhatever.Screen
 
 
         #endregion
+
         #region Networking
         int pindex = 1;
         TcpClient client;
@@ -730,4 +724,5 @@ namespace WizardsOrWhatever.Screen
         }
         #endregion
     }
+
 }
