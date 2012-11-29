@@ -117,7 +117,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Camera.cs" />
     <Compile Include="Camera2D.cs" />
     <Compile Include="CompositeCharacter.cs" />
     <Compile Include="ConvertUnits.cs" />
@@ -149,7 +148,6 @@
     <Compile Include="Screen Management\ScreenManager.cs" />
     <Compile Include="StaticPhysicsObject.cs" />
     <Compile Include="Terrain.cs" />
-    <Compile Include="TextureDetails.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
