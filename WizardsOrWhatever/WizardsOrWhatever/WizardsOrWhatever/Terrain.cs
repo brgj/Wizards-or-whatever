@@ -59,6 +59,33 @@ namespace WizardsOrWhatever
         public int SubCellSize;
 
         /// <summary>
+        /// Number of bytes in point cloud
+        /// </summary>
+        public int Length
+        {
+            get
+            {
+                return _terrainMap.Length;
+            }
+        }
+
+        /// <summary>
+        /// Visible public property to see if terrain is created yet
+        /// </summary>
+        public bool Created
+        {
+            get
+            {
+                return _isCreated;
+            }
+        }
+
+        /// <summary>
+        /// Set to true when terrain is created
+        /// </summary>
+        private bool _isCreated = false;
+
+        /// <summary>
         /// Point cloud defining the terrain.
         /// </summary>
         private sbyte[,] _terrainMap;
@@ -212,25 +239,37 @@ namespace WizardsOrWhatever
                 }
             }
             // generate terrain
-            for (int gy = 0; gy < _ynum; gy++)
+            RegenerateTerrain();
+            _isCreated = true;
+        }
+
+        
+
+        public byte[] GetDataFromTerrain()
+        {
+            byte[] data = new byte[_terrainMap.Length];
+            for (int x = 0; x < _terrainMap.GetLength(0); x++)
             {
-                for (int gx = 0; gx < _xnum; gx++)
+                for (int y = 0; y < _terrainMap.GetLength(1); y++)
                 {
-                    //remove old terrain object at grid cell
-                    if (_bodyMap[gx, gy] != null)
-                    {
-                        for (int i = 0; i < _bodyMap[gx, gy].Count; i++)
-                        {
-                            World.RemoveBody(_bodyMap[gx, gy][i]);
-                        }
-                    }
-
-                    _bodyMap[gx, gy] = null;
-
-                    //generate new one
-                    GenerateTerrain(gx, gy);
+                    data[x + y * _terrainMap.GetLength(0)] = unchecked((byte)_terrainMap[x, y]);
                 }
             }
+            return data;
+        }
+
+        // TODO: No error checking in here right now; could overflow if bad data is received
+        public void CreateTerrainFromData(byte[] data)
+        {
+            for (int x = 0; x < _terrainMap.GetLength(0); x++)
+            {
+                for (int y = 0; y < _terrainMap.GetLength(1); y++)
+                {
+                    _terrainMap[x, y] = unchecked((sbyte)data[x + y * _terrainMap.GetLength(0)]);
+                }
+            }
+            RegenerateTerrain();
+            _isCreated = true;
         }
 
         /// <summary>
@@ -270,11 +309,11 @@ namespace WizardsOrWhatever
             var gx0 = (int)(_dirtyArea.LowerBound.X / CellSize);
             var gx1 = (int)(_dirtyArea.UpperBound.X / CellSize) + 1;
             if (gx0 < 0) gx0 = 0;
-            if (gx1 > _xnum) gx1 = _xnum;
+            if (gx1 > _xnum || gx1 < gx0) gx1 = _xnum;
             var gy0 = (int)(_dirtyArea.LowerBound.Y / CellSize);
             var gy1 = (int)(_dirtyArea.UpperBound.Y / CellSize) + 1;
             if (gy0 < 0) gy0 = 0;
-            if (gy1 > _ynum) gy1 = _ynum;
+            if (gy1 > _ynum || gy1 < gy0) gy1 = _ynum;
 
             for (int gx = gx0; gx < gx1; gx++)
             {

@@ -91,7 +91,9 @@ namespace WizardsOrWhatever
         Texture2D projectileTex;
         Texture2D explosionTex;
 
-        byte id;
+        byte id = 27;
+
+        bool terrainMaster = false;
 
         /// <summary>
         /// Constructor.
@@ -154,7 +156,6 @@ namespace WizardsOrWhatever
 
 
             Texture2D terrainTex = Content.Load<Texture2D>("ground");
-            terrain.CreateRandomTerrain(new Vector2(0, 0));
 
             font = Content.Load<SpriteFont>("font");
 
@@ -177,7 +178,8 @@ namespace WizardsOrWhatever
             readBuffer = new byte[BUFFER_SIZE];
             client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
 
-
+            if(id == 0)
+                terrain.CreateRandomTerrain(new Vector2(0, 0));
 
             // Set camera to track player
             camera.TrackingBody = player.body;
@@ -603,12 +605,22 @@ namespace WizardsOrWhatever
                 }
                 else if (p == Protocol.Connected)
                 {
+                    terrainMaster = true;
+                    foreach (byte otherID in playerMap.Keys)
+                    {
+                        if (otherID < this.id)
+                        {
+                            terrainMaster = false;
+                            break;
+                        }
+                    }
                     //pindex++;
                     System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
                     ScreenManager.CharacterColor = Color.White;
-                    //Finding player2 when the game starts
+
+                    
 
                     CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                             Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
@@ -616,15 +628,20 @@ namespace WizardsOrWhatever
                     newPlayer.body.IgnoreGravity = true;
                     newPlayer.wheel.IgnoreGravity = true;
                     newPlayer.body.LinearVelocity = new Vector2(0, 0);
-                    newPlayer.body.BodyType = BodyType.Static;
-                    newPlayer.wheel.BodyType = BodyType.Static;
                     playerMap.Add(id, newPlayer);
                     
                     writeStream.Position = 0;
                     writer.Write((byte)Protocol.AddCharacter);
                     writer.Write((byte)playerMap.Count);
+                    if (terrainMaster)
+                    {
+                        writer.Write((byte)Protocol.CreateTerrain);
+                        byte[] terrainData = terrain.GetDataFromTerrain();
+                        for (int i = 0; i < terrainData.Length; i += BUFFER_SIZE)
+                            writer.Write(terrainData, i, BUFFER_SIZE);
+                    }
                     SendData(GetDataFromMemoryStream(writeStream));
-                        //pindex = pindex - 1;
+                    //pindex = pindex - 1;
                     /*
                     if (pindex == 4 && player3 == null)
                     {
@@ -678,8 +695,6 @@ namespace WizardsOrWhatever
                         newPlayer.body.IgnoreGravity = true;
                         newPlayer.wheel.IgnoreGravity = true;
                         newPlayer.body.LinearVelocity = new Vector2(0, 0);
-                        newPlayer.body.BodyType = BodyType.Static;
-                        newPlayer.wheel.BodyType = BodyType.Static;
                         player.IgnoreCollisionWith(newPlayer);
                         playerMap.Add(id, newPlayer);
                     }
@@ -689,14 +704,9 @@ namespace WizardsOrWhatever
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
 
-                    if (terrain == null)
+                    if (!terrain.Created)
                     {
-                        terrain = new Terrain(world, new AABB(new Vector2(0, 25), 200, 50))
-                        {
-                            PointsPerUnit = 10,
-                            CellSize = 50,
-                            SubCellSize = 5
-                        };
+                        terrain.CreateTerrainFromData(reader.ReadBytes(terrain.Length));
                     }
                 }
 

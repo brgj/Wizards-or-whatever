@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WizardsOrWhatever
 {
-    public enum Protocol:int
+    public enum Protocol:byte
     {
         Disconnected = 0,
         Connected = 1,
