@@ -66,7 +66,7 @@ namespace WizardsOrWhatever
 
             foreach (Texture2D txtr in ScrollingTextures )
             {
-                _textures.Add(new TextureDetail(txtr, txtr.Width, txtr.Height, LastWidth, LastHeight, i.ToString()));
+                _textures.Add(new TextureDetail(txtr, txtr.Width, txtr.Height, LastWidth, LastHeight, i.ToString(),_startPosition));
                 LastWidth += txtr.Width;
                 LastHeight += txtr.Height;
                 i++;
@@ -79,23 +79,29 @@ namespace WizardsOrWhatever
         public void Move(Vector2 NewPosition)
         {
             Vector2 mid, distance;
+            // Calculating where the middle point of the image is
             float X = (_textures[_textures.Count-1].Width)/2;
             float Y = (_textures[_textures.Count-1].Height)/2;
 
-            mid = new Vector2(NewPosition.X - X, NewPosition.Y - Y);
-            distance = new Vector2((NewPosition.X - _startPosition.X) * 0.04f, (NewPosition.Y - _startPosition.Y) * 0.01f);
+            for (int i = 0; i < _textures.Count; i++)
+            {
+                // changes the origin so that the middle of the picture is at the same position as the player
+                mid = new Vector2(NewPosition.X - X, NewPosition.Y - Y);
+                // the distance of the character from it's start position multiplied by some ammount so that it doesn't scroll to fast
+                distance = new Vector2((NewPosition.X - _startPosition.X) * 0.04f*i, (NewPosition.Y - _startPosition.Y) * 0.01f*i);
 
-            _currentPosition.X = mid.X - distance.X;
-            _currentPosition.Y = mid.Y - distance.Y;
+                _textures[i].CurrentPosition.X = mid.X - distance.X;
+                _textures[i].CurrentPosition.Y = mid.Y - distance.Y;
+            }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            float positionX = _currentPosition.X;
-            float positionY = _currentPosition.Y;
+            //float positionX = _currentPosition.X;
+            //float positionY = _currentPosition.Y;
             for (int i = 0; i < _textures.Count; i++)
             {
-                spriteBatch.Draw(_textures[i].Texture,_currentPosition, Color.White);
+                spriteBatch.Draw(_textures[i].Texture,_textures[i].CurrentPosition, Color.White);
             }
         }
 
@@ -114,8 +120,10 @@ namespace WizardsOrWhatever
         public int BeltPositionX;
         public int BeltPositionY;
         public float Speed;
+        public Vector2 CurrentPosition;
 
-        public TextureDetail(Texture2D texture, int width, int height, int posX, int posY, string Name)
+
+        public TextureDetail(Texture2D texture, int width, int height, int posX, int posY, string Name, Vector2 currentPosition)
         {
             this.Texture = texture;
             this.Width = width;
@@ -123,6 +131,8 @@ namespace WizardsOrWhatever
             this.BeltPositionX = posX;
             this.BeltPositionY = posY;
             this.Name = Name;
+            this.CurrentPosition = currentPosition;
+
         }
     }
 

@@ -128,7 +128,9 @@ namespace WizardsOrWhatever
 
             // Back ground stuff --------------------------------
             List<Texture2D> list = new List<Texture2D>();
-            list.Add(ScreenManager.Game.Content.Load<Texture2D>("GBackground"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("Sky"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("trees"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("Grass"));
             skyLayer = new GameBackground(list, camera.Position)
             {
                 Height = ScreenManager.GraphicsDevice.Viewport.Height,
