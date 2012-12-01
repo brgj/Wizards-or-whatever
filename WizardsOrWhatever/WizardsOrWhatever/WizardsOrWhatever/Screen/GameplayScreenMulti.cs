@@ -51,9 +51,7 @@ namespace WizardsOrWhatever
         Camera2D camera;
         //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
         CompositeCharacter player;
-        CompositeCharacter player2;
-        CompositeCharacter player3;
-        CompositeCharacter player4;
+        Dictionary<byte, CompositeCharacter> playerMap = new Dictionary<byte,CompositeCharacter>();
         HUD playerHUD;
         HUD playerHUD2;
         HUD playerHUD3;
@@ -62,6 +60,7 @@ namespace WizardsOrWhatever
         //Walls. Placeholders for terrain.
         PhysicsObject leftWall;
         PhysicsObject rightWall;
+        PhysicsObject ground;
 
         //Projectiles
         List<Projectile> projectiles = new List<Projectile>();
@@ -92,8 +91,7 @@ namespace WizardsOrWhatever
         Texture2D projectileTex;
         Texture2D explosionTex;
 
-
-        bool isPlayer2 = false;
+        byte id;
 
         /// <summary>
         /// Constructor.
@@ -165,15 +163,13 @@ namespace WizardsOrWhatever
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
+            //player2.body.IgnoreCCD = true;
+            //player2.wheel.IgnoreCCD = true;
+            //player2.body.Awake = false;
+            //player2.wheel.Awake = false;
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
             ScreenManager.Game.Components.Add(playerHUD);
-            if (isPlayer2)
-            {
-                playerHUD2 = new HUD(ScreenManager.Game, player2, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
-
-                ScreenManager.Game.Components.Add(playerHUD2);
-            }
 
             client = new TcpClient();
             client.NoDelay = true;
@@ -192,6 +188,7 @@ namespace WizardsOrWhatever
             rightWall = new StaticPhysicsObject(world, new Vector2(ConvertUnits.ToDisplayUnits(100.0f), 0), Content.Load<Texture2D>("platformTex"),
                 new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
 
+            ground = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 4.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f + 100), Content.Load<Texture2D>("platformTex"), new Vector2(2000f, 20f));
             // Load projectile and explosion textures
             projectileTex = Content.Load<Texture2D>("projectile_fire");
             explosionTex = Content.Load<Texture2D>("explosion");
@@ -238,17 +235,13 @@ namespace WizardsOrWhatever
                                                        bool coveredByOtherScreen)
         {
             //-------------------------------------
-
-
-            Vector2 iPosition = new Vector2(player.Position.X, player.Position.Y);
-
             KeyboardState current = Keyboard.GetState();
             Vector2 movement = Vector2.Zero;
 
 
             //-----------------------------------
 
-            base.Update(gameTime, otherScreenHasFocus, false);
+            base.Update(gameTime, false, false);
 
             // updating the position of the background.
             skyLayer.Move(player.Position);
@@ -343,7 +336,6 @@ namespace WizardsOrWhatever
                     player.move();
                 }
 
-                player.Update(gameTime);
                 camera.Update(gameTime);
 
                 //Notifies the world that time has progressed.
@@ -355,25 +347,15 @@ namespace WizardsOrWhatever
                 //player.move(movement) = ;
 
 
-                Vector2 nPosition = new Vector2(player.Position.X, player.Position.Y);
-
-                Vector2 deltap = Vector2.Subtract(nPosition, iPosition);
-                if (deltap != Vector2.Zero)
-                {
-                    writeStream.Position = 0;
-                    writer.Write((byte)2);
-                    writer.Write(deltap.X);
-                    writer.Write(-deltap.Y);
-                    writer.Write((byte)player.Direction);
-                    writer.Write((byte)player.State);
-                    SendData(GetDataFromMemoryStream(writeStream));
-                }
+                writeStream.Position = 0;
+                writer.Write((byte)2);
+                writer.Write(player.Position.X);
+                writer.Write(player.Position.Y);
+                writer.Write((byte)player.Direction);
+                writer.Write((byte)player.State);
+                SendData(GetDataFromMemoryStream(writeStream));
 
                 player.Update(gameTime);
-                if (isPlayer2)
-                {
-                    player2.Update(gameTime);
-                }
 
                 //----------------------------------
 
@@ -404,10 +386,10 @@ namespace WizardsOrWhatever
             bool gamePadDisconnected = !gamePadState.IsConnected &&
                                        input.GamePadWasConnected[playerIndex];
 
-            if (input.IsPauseGame(ControllingPlayer) || gamePadDisconnected)
-            {
-                ScreenManager.AddScreen(new PauseMenuScreen(), ControllingPlayer);
-            }
+            //if (input.IsPauseGame(ControllingPlayer) || gamePadDisconnected)
+            //{
+            //    ScreenManager.AddScreen(new PauseMenuScreen(), ControllingPlayer);
+            //}
         }
 
 
@@ -442,14 +424,15 @@ namespace WizardsOrWhatever
 
             leftWall.Draw(spriteBatch);
             rightWall.Draw(spriteBatch);
+            ground.Draw(spriteBatch);
 
             if (player != null)
             {
                 player.Draw(spriteBatch);
             }
-            if (isPlayer2)
+            foreach (CompositeCharacter p in playerMap.Values)
             {
-                player2.Draw(spriteBatch);
+                p.Draw(spriteBatch);
             }/*
             if (player3 != null)
             {
@@ -520,7 +503,6 @@ namespace WizardsOrWhatever
         private void CheckCollision(Projectile p)
         {
             DrawCircleOnMap(p.body.Position, p.level, 1);
-            LaunchPlayer(player2, p.Position, ConvertUnits.ToDisplayUnits(p.level));
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position));
@@ -607,37 +589,43 @@ namespace WizardsOrWhatever
 
             readStream.Write(data, 0, data.Length);//read data
             readStream.Position = 0;
-
-            Protocols p = new Protocols();
+            Protocol p;
             try
             {
-
-
-                //p = (Protocol)reader.ReadByte();
-                p.setData(reader.ReadByte());
+                p = (Protocol)reader.ReadByte();
                 /*if (GameScreen.isExiting)
                 {
                     System.Diagnostics.Debug.WriteLine
                 }*/
-                if (p.getData() == 1)//p == Protocol.Connected)
+                if (p == Protocol.Initialize)
+                {
+                    id = reader.ReadByte();
+                }
+                else if (p == Protocol.Connected)
                 {
                     //pindex++;
                     System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
-                    if (!isPlayer2) //player2 == null)
-                    {
-                        isPlayer2 = true;
-                        ScreenManager.CharacterColor = Color.White;
-                        //Finding player2 when the game starts
+                    ScreenManager.CharacterColor = Color.White;
+                    //Finding player2 when the game starts
 
-                        player2 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
-                        writeStream.Position = 0;
-                        writer.Write(p.getData());
-                        SendData(GetDataFromMemoryStream(writeStream));
+                    CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                            Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                    player.IgnoreCollisionWith(newPlayer);
+                    newPlayer.body.IgnoreGravity = true;
+                    newPlayer.wheel.IgnoreGravity = true;
+                    newPlayer.body.LinearVelocity = new Vector2(0, 0);
+                    newPlayer.body.BodyType = BodyType.Static;
+                    newPlayer.wheel.BodyType = BodyType.Static;
+                    playerMap.Add(id, newPlayer);
+                    
+                    writeStream.Position = 0;
+                    writer.Write((byte)Protocol.AddCharacter);
+                    writer.Write((byte)playerMap.Count);
+                    SendData(GetDataFromMemoryStream(writeStream));
                         //pindex = pindex - 1;
-                    }/*
+                    /*
                     if (pindex == 4 && player3 == null)
                     {
                         player3 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
@@ -656,25 +644,66 @@ namespace WizardsOrWhatever
                     }*/
                 }
 
-                else if (p.getData() == 0)//p == Protocol.Disconnected)
+                else if (p == Protocol.Disconnected)
                 {
                     //pindex--;
                     //System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
-                    isPlayer2 = false;
                     //player2 = null;
                 }
-                else if (p.getData() == 2)
+                else if (p == Protocol.Movement)
                 {
                     float px = reader.ReadSingle();
                     float py = reader.ReadSingle();
-                    player2.Direction = (Character.CharDirection)reader.ReadByte();
-                    player2.State = (Character.CharState)reader.ReadByte();
+                    Character.CharDirection dir = (Character.CharDirection)reader.ReadByte();
+                    Character.CharState state = (Character.CharState)reader.ReadByte();
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
 
-                    player2.Position = new Vector2(player2.Position.X + px, player2.Position.Y - py);
+                    playerMap[id].Direction = dir;
+                    playerMap[id].State = state;
+                    playerMap[id].Position = new Vector2(px, py);
+                }
+                else if (p == Protocol.AddCharacter)
+                {
+                    byte numPlayers = reader.ReadByte();
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+                    CompositeCharacter newPlayer;
+                    if (numPlayers != playerMap.Count)
+                    {
+                        newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                            Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                        newPlayer.body.IgnoreGravity = true;
+                        newPlayer.wheel.IgnoreGravity = true;
+                        newPlayer.body.LinearVelocity = new Vector2(0, 0);
+                        newPlayer.body.BodyType = BodyType.Static;
+                        newPlayer.wheel.BodyType = BodyType.Static;
+                        player.IgnoreCollisionWith(newPlayer);
+                        playerMap.Add(id, newPlayer);
+                    }
+                }
+                else if (p == Protocol.CreateTerrain)
+                {
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
+
+                    if (terrain == null)
+                    {
+                        terrain = new Terrain(world, new AABB(new Vector2(0, 25), 200, 50))
+                        {
+                            PointsPerUnit = 10,
+                            CellSize = 50,
+                            SubCellSize = 5
+                        };
+                    }
+                }
+
+                else if (p == Protocol.ModifyTerrain)
+                {
+                    byte id = reader.ReadByte();
+                    string ip = reader.ReadString();
                 }
             }
             catch (Exception e)

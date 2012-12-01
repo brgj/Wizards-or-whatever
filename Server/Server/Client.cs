@@ -39,6 +39,7 @@ namespace Server
             this.client = client;
             IP = client.Client.RemoteEndPoint.ToString();
             client.NoDelay = true;
+            SendData(new byte[2] { (byte)3, id });
 
             StartListening();
             connected = true;
@@ -56,7 +57,6 @@ namespace Server
             client = new TcpClient();
             client.NoDelay = true;
             client.Connect(ip, port);
-
             StartListening();
             connected = true;
         }

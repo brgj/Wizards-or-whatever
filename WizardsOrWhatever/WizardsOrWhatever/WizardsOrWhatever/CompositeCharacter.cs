@@ -504,6 +504,13 @@ namespace WizardsOrWhatever
                 }
             }
         }
+        public void IgnoreCollisionWith(CompositeCharacter player)
+        {
+            body.IgnoreCollisionWith(player.body);
+            wheel.IgnoreCollisionWith(player.body);
+            body.IgnoreCollisionWith(player.wheel);
+            wheel.IgnoreCollisionWith(player.wheel);
+        }
         public new void Dispose()
         {
             if (!IsDisposed)
