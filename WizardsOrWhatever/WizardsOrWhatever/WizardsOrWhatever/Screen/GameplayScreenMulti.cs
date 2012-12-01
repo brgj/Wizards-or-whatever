@@ -504,7 +504,7 @@ namespace WizardsOrWhatever
 
         private void CheckCollision(Projectile p)
         {
-            DrawCircleOnMap(p.body.Position, p.level, 1);
+             DrawCircleOnMap(p.body.Position, p.level, 1);
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position));
@@ -631,16 +631,33 @@ namespace WizardsOrWhatever
                     playerMap.Add(id, newPlayer);
                     
                     writeStream.Position = 0;
-                    writer.Write((byte)Protocol.AddCharacter);
-                    writer.Write((byte)playerMap.Count);
-                    if (terrainMaster)
-                    {
-                        writer.Write((byte)Protocol.CreateTerrain);
-                        byte[] terrainData = terrain.GetDataFromTerrain();
-                        for (int i = 0; i < terrainData.Length; i += BUFFER_SIZE)
-                            writer.Write(terrainData, i, BUFFER_SIZE);
-                    }
+                    writer.Write((byte)Protocol.CreateTerrain);
                     SendData(GetDataFromMemoryStream(writeStream));
+                    /*writer.Write((byte)playerMap.Count);
+                    SendData(GetDataFromMemoryStream(writeStream));
+                    try
+                    {
+                        if (terrainMaster)
+                        {
+                            byte[] terrainData = terrain.GetDataFromTerrain();
+                            int i;
+                            for (i = 0; i < terrainData.Length - (BUFFER_SIZE - 1); i += (BUFFER_SIZE-1))
+                            {
+                                writeStream.Position = 0;
+                                writer.Write((byte)Protocol.CreateTerrain);
+                                writer.Write(terrainData, i, (BUFFER_SIZE-1));
+                                SendData(GetDataFromMemoryStream(writeStream));
+                            }
+                            writeStream.Position = 0;
+                            writer.Write((byte)Protocol.CreateTerrain);
+                            writer.Write(terrainData, i, (terrainData.Length-1) % (BUFFER_SIZE - 1));
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
+                    }
+                    catch (Exception e)
+                    {
+
+                    }*/
                     //pindex = pindex - 1;
                     /*
                     if (pindex == 4 && player3 == null)
