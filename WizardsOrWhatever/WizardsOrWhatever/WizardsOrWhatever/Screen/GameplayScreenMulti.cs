@@ -255,7 +255,7 @@ namespace WizardsOrWhatever
             base.Update(gameTime, false, false);
 
             // updating the position of the background.
-            skyLayer.Move(player.Position);
+            skyLayer.Move(player.Position, ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
 
             //UPDATES EACH PROJECTILE IN THE GAME
             foreach (Projectile projectile in projectiles)

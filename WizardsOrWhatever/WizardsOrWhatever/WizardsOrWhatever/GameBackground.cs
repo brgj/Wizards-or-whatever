@@ -76,7 +76,7 @@ namespace WizardsOrWhatever
 
         #region Methods/Draw
 
-        public void Move(Vector2 NewPosition)
+        public void Move(Vector2 NewPosition, float vpHeight, float vpWidth)
         {
             Vector2 mid, distance;
             // Calculating where the middle point of the image is
@@ -90,11 +90,35 @@ namespace WizardsOrWhatever
                 // the distance of the character from it's start position multiplied by some ammount so that it doesn't scroll to fast
                 distance = new Vector2((NewPosition.X - _startPosition.X) * 0.04f*i, (NewPosition.Y - _startPosition.Y) * 0.01f*i);
 
+
                 _textures[i].CurrentPosition.X = mid.X - distance.X;
                 _textures[i].CurrentPosition.Y = mid.Y - distance.Y;
+
+
+                // the following two if,else statements are for looping when the edge of the image is within the viewport
+                if (_textures[i].CurrentPosition.X > NewPosition.X - (vpWidth / 2))
+                {
+                    _textures[i].beltLeft = true;
+                    _textures[i].BeltPosition.X = _textures[i].CurrentPosition.X - _textures[i].Width;
+                }
+                else
+                {
+                    _textures[i].beltLeft = false;
+                }
+                if (_textures[i].CurrentPosition.X + _textures[i].Width < NewPosition.X + (vpWidth / 2))
+                {
+                    _textures[i].beltRight = true;
+                    _textures[i].BeltPosition.X = _textures[i].CurrentPosition.X + _textures[i].Width;
+                }
+                else
+                {
+                    _textures[i].beltRight = false;
+                }
+
+                _textures[i].BeltPosition.Y = _textures[i].CurrentPosition.Y;
             }
         }
-
+        
         public void Draw(SpriteBatch spriteBatch)
         {
             //float positionX = _currentPosition.X;
@@ -102,6 +126,10 @@ namespace WizardsOrWhatever
             for (int i = 0; i < _textures.Count; i++)
             {
                 spriteBatch.Draw(_textures[i].Texture,_textures[i].CurrentPosition, Color.White);
+                if (_textures[i].beltLeft || _textures[i].beltRight)
+                {
+                    spriteBatch.Draw(_textures[i].Texture, _textures[i].BeltPosition, Color.White);
+                }
             }
         }
 
@@ -117,10 +145,10 @@ namespace WizardsOrWhatever
         public Texture2D Texture;
         public int Width;
         public int Height;
-        public int BeltPositionX;
-        public int BeltPositionY;
-        public float Speed;
+        public Vector2 BeltPosition;
         public Vector2 CurrentPosition;
+        public bool beltLeft = false;
+        public bool beltRight = false;
 
 
         public TextureDetail(Texture2D texture, int width, int height, int posX, int posY, string Name, Vector2 currentPosition)
@@ -128,8 +156,8 @@ namespace WizardsOrWhatever
             this.Texture = texture;
             this.Width = width;
             this.Height = height;
-            this.BeltPositionX = posX;
-            this.BeltPositionY = posY;
+            this.BeltPosition.X = posX;
+            this.BeltPosition.Y = posY;
             this.Name = Name;
             this.CurrentPosition = currentPosition;
 

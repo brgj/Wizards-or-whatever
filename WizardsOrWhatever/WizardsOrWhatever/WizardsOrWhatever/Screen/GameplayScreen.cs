@@ -205,7 +205,8 @@ namespace WizardsOrWhatever
             base.Update(gameTime, otherScreenHasFocus, false);
 
             // updating the position of the background.
-            skyLayer.Move(player.Position);
+            //Vector2 viewPort = new Vector2(ScreenManager.GraphicsDevice.Viewport.X, ScreenManager.GraphicsDevice.Viewport.Y);
+            skyLayer.Move(player.Position,ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
 
             //UPDATES EACH PROJECTILE IN THE GAME
             foreach (Projectile projectile in projectiles)
