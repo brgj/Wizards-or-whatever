@@ -59,17 +59,6 @@ namespace WizardsOrWhatever
         public int SubCellSize;
 
         /// <summary>
-        /// Number of bytes in point cloud
-        /// </summary>
-        public int Length
-        {
-            get
-            {
-                return _terrainMap.Length;
-            }
-        }
-
-        /// <summary>
         /// Visible public property to see if terrain is created yet
         /// </summary>
         public bool Created
@@ -79,6 +68,11 @@ namespace WizardsOrWhatever
                 return _isCreated;
             }
         }
+
+        /// <summary>
+        /// Seeds used to generate terrain
+        /// </summary>
+        public double seed1, seed2, seed3;
 
         /// <summary>
         /// Set to true when terrain is created
@@ -191,23 +185,18 @@ namespace WizardsOrWhatever
         /// Randomizes the terrain using three sine waves with random seeds
         /// </summary>
         /// <returns></returns>
-        public int[] RandomizeTerrain()
+        public int[] GetSeededTerrain(double s1, double s2, double s3)
         {
             int[] terrainContour = new int[(int)_localWidth*10];
-            Random randomizer = new Random();
-            double rand1 = randomizer.NextDouble() + 1;
-            double rand2 = randomizer.NextDouble() + 2;
-            double rand3 = randomizer.NextDouble() + 3;
-
             float offset = Height*2;
             float peakHeight = Height;
             float flatness = 100;
 
             for (int x = 0; x < (int)_localWidth*10; x++)
             {
-                double height = peakHeight / rand1 * Math.Sin((float)x / flatness * rand1 + rand1);
-                height += peakHeight / rand2 * Math.Sin((float)x / flatness * rand2 + rand2);
-                height += peakHeight / rand3 * Math.Sin((float)x / flatness * rand3 + rand3);
+                double height = peakHeight / s1 * Math.Sin((float)x / flatness * s1 + s1);
+                height += peakHeight / s2 * Math.Sin((float)x / flatness * s2 + s2);
+                height += peakHeight / s3 * Math.Sin((float)x / flatness * s3 + s3);
                 height += offset;
                 terrainContour[x] = (int)height;
             }
@@ -218,9 +207,12 @@ namespace WizardsOrWhatever
         /// Uses RandomizeTerrain to create a contour, set the terrainMap, and generate the terrain.
         /// </summary>
         /// <param name="texture"></param>
-        public void CreateRandomTerrain(Vector2 position)
+        public void CreateTerrain(Vector2 position, double s1, double s2, double s3)
         {
-            int[] terrainContour = RandomizeTerrain();
+            seed1 = s1;
+            seed2 = s2;
+            seed3 = s3;
+            int[] terrainContour = GetSeededTerrain(seed1, seed2, seed3);
             int width = (int)_localWidth;
             int height = (int)_localHeight;
 
@@ -243,33 +235,17 @@ namespace WizardsOrWhatever
             _isCreated = true;
         }
 
-        
-
-        public byte[] GetDataFromTerrain()
+        /// <summary>
+        /// Uses RandomizeTerrain to create a contour, set the terrainMap, and generate the terrain.
+        /// </summary>
+        /// <param name="texture"></param>
+        public void CreateRandomTerrain(Vector2 position)
         {
-            byte[] data = new byte[_terrainMap.Length];
-            for (int x = 0; x < _terrainMap.GetLength(0); x++)
-            {
-                for (int y = 0; y < _terrainMap.GetLength(1); y++)
-                {
-                    data[x + y * _terrainMap.GetLength(0)] = unchecked((byte)_terrainMap[x, y]);
-                }
-            }
-            return data;
-        }
-
-        // TODO: No error checking in here right now; could overflow if bad data is received
-        public void CreateTerrainFromData(byte[] data)
-        {
-            for (int x = 0; x < _terrainMap.GetLength(0); x++)
-            {
-                for (int y = 0; y < _terrainMap.GetLength(1); y++)
-                {
-                    _terrainMap[x, y] = unchecked((sbyte)data[x + y * _terrainMap.GetLength(0)]);
-                }
-            }
-            RegenerateTerrain();
-            _isCreated = true;
+            Random randomizer = new Random();
+            double rand1 = randomizer.NextDouble() + 1;
+            double rand2 = randomizer.NextDouble() + 2;
+            double rand3 = randomizer.NextDouble() + 3;
+            CreateTerrain(position, rand1, rand2, rand3);
         }
 
         /// <summary>

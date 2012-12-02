@@ -95,6 +95,12 @@ namespace WizardsOrWhatever
 
         bool terrainMaster = false;
 
+        int index;
+
+        byte[] array;
+
+        
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -178,9 +184,12 @@ namespace WizardsOrWhatever
             readBuffer = new byte[BUFFER_SIZE];
             client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
 
-            if(id == 0)
-                terrain.CreateRandomTerrain(new Vector2(0, 0));
+            Thread.Sleep(2000);
 
+            if (id == 0)
+            {
+                terrain.CreateRandomTerrain(new Vector2(0, 0));
+            }
             // Set camera to track player
             camera.TrackingBody = player.body;
 
@@ -355,7 +364,10 @@ namespace WizardsOrWhatever
                 writer.Write(player.Position.Y);
                 writer.Write((byte)player.Direction);
                 writer.Write((byte)player.State);
-                SendData(GetDataFromMemoryStream(writeStream));
+                lock (client.GetStream())
+                {
+                    SendData(GetDataFromMemoryStream(writeStream));
+                }
 
                 player.Update(gameTime);
 
@@ -602,62 +614,59 @@ namespace WizardsOrWhatever
                 if (p == Protocol.Initialize)
                 {
                     id = reader.ReadByte();
+                    //if (id == 0)
+                    //    terrain.CreateRandomTerrain(new Vector2(0, 0));
                 }
                 else if (p == Protocol.Connected)
                 {
-                    terrainMaster = true;
-                    foreach (byte otherID in playerMap.Keys)
+                    lock (client.GetStream())
                     {
-                        if (otherID < this.id)
+                        terrainMaster = true;
+                        foreach (byte otherID in playerMap.Keys)
                         {
-                            terrainMaster = false;
-                            break;
+                            if (otherID < this.id)
+                            {
+                                terrainMaster = false;
+                                break;
+                            }
                         }
-                    }
-                    //pindex++;
-                    System.Diagnostics.Debug.WriteLine(pindex);
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-                    ScreenManager.CharacterColor = Color.White;
+                        //pindex++;
+                        System.Diagnostics.Debug.WriteLine(pindex);
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
+                        ScreenManager.CharacterColor = Color.White;
 
-                    
 
-                    CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                            Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
-                    player.IgnoreCollisionWith(newPlayer);
-                    newPlayer.body.IgnoreGravity = true;
-                    newPlayer.wheel.IgnoreGravity = true;
-                    newPlayer.body.LinearVelocity = new Vector2(0, 0);
-                    playerMap.Add(id, newPlayer);
-                    
-                    writeStream.Position = 0;
-                    writer.Write((byte)Protocol.CreateTerrain);
-                    SendData(GetDataFromMemoryStream(writeStream));
-                    /*writer.Write((byte)playerMap.Count);
-                    SendData(GetDataFromMemoryStream(writeStream));
-                    try
-                    {
-                        if (terrainMaster)
+
+                        CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                                Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                        newPlayer.body.IgnoreGravity = true;
+                        newPlayer.wheel.IgnoreGravity = true;
+                        newPlayer.body.CollidesWith = Category.Cat24;
+                        newPlayer.wheel.CollidesWith = Category.Cat24;
+                        playerMap.Add(id, newPlayer);
+
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.AddCharacter);
+                        writer.Write((byte)playerMap.Count);
+                        SendData(GetDataFromMemoryStream(writeStream));
+                        try
                         {
-                            byte[] terrainData = terrain.GetDataFromTerrain();
-                            int i;
-                            for (i = 0; i < terrainData.Length - (BUFFER_SIZE - 1); i += (BUFFER_SIZE-1))
+                            if (terrainMaster)
                             {
                                 writeStream.Position = 0;
                                 writer.Write((byte)Protocol.CreateTerrain);
-                                writer.Write(terrainData, i, (BUFFER_SIZE-1));
+                                writer.Write(terrain.seed1);
+                                writer.Write(terrain.seed2);
+                                writer.Write(terrain.seed3);
                                 SendData(GetDataFromMemoryStream(writeStream));
                             }
-                            writeStream.Position = 0;
-                            writer.Write((byte)Protocol.CreateTerrain);
-                            writer.Write(terrainData, i, (terrainData.Length-1) % (BUFFER_SIZE - 1));
-                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
+                        catch (Exception e)
+                        {
+
                         }
                     }
-                    catch (Exception e)
-                    {
-
-                    }*/
                     //pindex = pindex - 1;
                     /*
                     if (pindex == 4 && player3 == null)
@@ -701,7 +710,7 @@ namespace WizardsOrWhatever
                 }
                 else if (p == Protocol.AddCharacter)
                 {
-                    byte numPlayers = reader.ReadByte();
+                     byte numPlayers = reader.ReadByte();
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
                     CompositeCharacter newPlayer;
@@ -711,19 +720,22 @@ namespace WizardsOrWhatever
                             Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
                         newPlayer.body.IgnoreGravity = true;
                         newPlayer.wheel.IgnoreGravity = true;
-                        newPlayer.body.LinearVelocity = new Vector2(0, 0);
-                        player.IgnoreCollisionWith(newPlayer);
+                        newPlayer.body.CollidesWith = Category.Cat24;
+                        newPlayer.wheel.CollidesWith = Category.Cat24;
                         playerMap.Add(id, newPlayer);
                     }
                 }
                 else if (p == Protocol.CreateTerrain)
                 {
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-
                     if (!terrain.Created)
                     {
-                        terrain.CreateTerrainFromData(reader.ReadBytes(terrain.Length));
+                        double s1 = reader.ReadDouble();
+                        double s2 = reader.ReadDouble();
+                        double s3 = reader.ReadDouble();
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
+
+                        terrain.CreateTerrain(new Vector2(0, 0), s1, s2, s3);
                     }
                 }
 
@@ -768,10 +780,7 @@ namespace WizardsOrWhatever
             //Try to send the data.  If an exception is thrown, disconnect the client
             try
             {
-                lock (client.GetStream())
-                {
-                    client.GetStream().BeginWrite(b, 0, b.Length, null, null);
-                }
+                client.GetStream().BeginWrite(b, 0, b.Length, null, null);
             }
             catch (Exception e)
             {
