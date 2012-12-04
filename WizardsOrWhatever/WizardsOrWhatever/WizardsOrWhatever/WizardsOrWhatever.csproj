@@ -120,6 +120,7 @@
     <Compile Include="Camera2D.cs" />
     <Compile Include="CompositeCharacter.cs" />
     <Compile Include="ConvertUnits.cs" />
+    <Compile Include="RespawnTimer.cs" />
     <Compile Include="YellowProjectile.cs" />
     <Compile Include="BlueProjectile.cs" />
     <Compile Include="Explosion.cs" />

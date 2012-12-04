@@ -16,7 +16,7 @@ namespace WizardsOrWhatever
             Idle,
             Jumping,
             Running,
-            Wallslide
+            Wallslide,
         }
 
         public enum CharDirection

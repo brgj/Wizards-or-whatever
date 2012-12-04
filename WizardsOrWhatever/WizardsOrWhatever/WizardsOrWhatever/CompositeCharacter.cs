@@ -40,6 +40,9 @@ namespace WizardsOrWhatever
         double currentFireTime = 0;
         public int fireDelay = 0;
 
+        //Dead or alive
+        public bool Dead { get; set; }
+
         Color CharacterColor
         {
             get { return charColor; }
@@ -99,6 +102,8 @@ namespace WizardsOrWhatever
             input = new Input(this);
             texWidth = (int)size.X;
             texHeight = (int)size.Y;
+
+            Dead = false;
 
             State = CharState.Idle;
             Direction = CharDirection.Right;
@@ -292,16 +297,38 @@ namespace WizardsOrWhatever
             Vector2 scale = new Vector2(Size.X / (float)texWidth, Size.Y / (float)texHeight);
             //spriteBatch.Draw(texture, new Rectangle((int)ConvertUnits.ToDisplayUnits(wheel.Position.X), (int)ConvertUnits.ToDisplayUnits(wheel.Position.Y), (int)ConvertUnits.ToDisplayUnits(size.X), (int)ConvertUnits.ToDisplayUnits(size.Y)), null, Color.White, wheel.Rotation, new Vector2(texture.Width / 2.0f, texture.Height / 2.0f), SpriteEffects.None, 0f);
 
-            spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), CharacterColor, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f)-10f), scale, SpriteEffects.None , 0);
+            //Draw the dead sprite instead
+            if (Dead)
+            {
+                spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), new Rectangle(2 * texWidth, 0 * texHeight, texWidth * 2, texHeight), CharacterColor, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f) - 10f), scale, SpriteEffects.None, 0);
+            }
+            else
+            {
+                spriteBatch.Draw(texture, ConvertUnits.ToDisplayUnits(body.Position), GetSpriteRect(), CharacterColor, 0f, new Vector2(texWidth / 2.0f, (texHeight / 2.0f) - 10f), scale, SpriteEffects.None, 0);
+            }
+        }
+
+        //Respawn the character with max stats and a random position (on the platform for now)
+        public void respawn()
+        {
+            Dead = false;
+            Health = maxHealth;
+            Mana = maxMana;
         }
 
         public void move(GamePadState gamePad)
         {
-            input.GamePadInput(gamePad);
+            if (!this.Dead)
+            {
+                input.GamePadInput(gamePad);
+            }
         }
         public void move()
         {
-            input.KeyboardInput();
+            if (!this.Dead)
+            {
+                input.KeyboardInput();
+            }
         }
 
         private class Input
@@ -318,7 +345,8 @@ namespace WizardsOrWhatever
                 KeyboardState keyboardState = Keyboard.GetState();
                 MouseState mouse = Mouse.GetState();
                 //Firing, seperate to fire at any time
-                if (mouse.LeftButton == ButtonState.Pressed)
+                //if (mouse.LeftButton == ButtonState.Pressed)
+                if(keyboardState.IsKeyDown(Keys.Space))
                 {
                     player.isFiring = true;
                 }

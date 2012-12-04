@@ -38,7 +38,7 @@ namespace WizardsOrWhatever
         Texture2D projectileIconBlue;
         Texture2D projectileIconRed;
 
-        Character player;
+        CompositeCharacter player;
         SpriteBatch spriteBatch;
         Game game;
         Color healthStatus;
@@ -48,6 +48,10 @@ namespace WizardsOrWhatever
         public Vector2 cursorPos;
         MouseState mousestate;
 
+        //Hud respawn timer
+        public RespawnTimer timer;
+        SpriteFont HUDfont;
+
         #endregion
 
         #region Initialization
@@ -56,7 +60,7 @@ namespace WizardsOrWhatever
         /// <summary>
         /// Constructor.
         /// </summary>
-        public HUD(Game game, Character player, ContentManager content, SpriteBatch spriteBatch)
+        public HUD(Game game, CompositeCharacter player, ContentManager content, SpriteBatch spriteBatch)
             : base(game)
         {
             this.game = game;
@@ -69,8 +73,8 @@ namespace WizardsOrWhatever
             projectileIconYellow = content.Load<Texture2D>("projectile_fire_yellow");
             projectileIconBlue = content.Load<Texture2D>("projectile_fire_blue");
             projectileIconRed = content.Load<Texture2D>("projectile_fire_red");
-            //TransitionOnTime = TimeSpan.FromSeconds(1.5);
-            //TransitionOffTime = TimeSpan.FromSeconds(0.5);
+            HUDfont = content.Load<SpriteFont>("gamefont");
+            timer = new RespawnTimer();
         }
 
         #endregion
@@ -143,6 +147,22 @@ namespace WizardsOrWhatever
             else if (player.Weapon == Character.WeaponSelect.Red)
             {
                 spriteBatch.Draw(projectileIconRed, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
+            }
+
+            if (player.Dead)
+            {
+                if (!timer.timerActive)
+                {
+                    timer.set(gameTime, 10);
+                    timer.timerActive = true;
+                }
+                if (timer.checkTimer(gameTime))
+                {
+                    timer.reset();
+                    player.respawn();
+                    timer.timerActive = false;
+                }
+                spriteBatch.DrawString(HUDfont, timer.display, new Vector2(GraphicsDevice.Viewport.Width / 4 + 20, 50), Color.Red);
             }
 
             spriteBatch.End();

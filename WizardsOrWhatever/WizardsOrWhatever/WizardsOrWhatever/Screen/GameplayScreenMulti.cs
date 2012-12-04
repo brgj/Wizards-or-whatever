@@ -53,9 +53,6 @@ namespace WizardsOrWhatever
         CompositeCharacter player;
         Dictionary<byte, CompositeCharacter> playerMap = new Dictionary<byte,CompositeCharacter>();
         HUD playerHUD;
-        HUD playerHUD2;
-        HUD playerHUD3;
-        HUD playerHUD4;
 
         //Walls. Placeholders for terrain.
         PhysicsObject leftWall;
@@ -172,10 +169,6 @@ namespace WizardsOrWhatever
             player = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
-            //player2.body.IgnoreCCD = true;
-            //player2.wheel.IgnoreCCD = true;
-            //player2.body.Awake = false;
-            //player2.wheel.Awake = false;
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
             ScreenManager.Game.Components.Add(playerHUD);
@@ -208,8 +201,6 @@ namespace WizardsOrWhatever
             projectileTexYellow = Content.Load<Texture2D>("projectile_fire_yellow");
             explosionTex = Content.Load<Texture2D>("explosion");
 
-
-
             // ----------------------------------------------------------
 
             // Sleep for the loading screen
@@ -229,10 +220,6 @@ namespace WizardsOrWhatever
         public override void UnloadContent()
         {
             client.Close();
-            //player = null;
-            //player2 = null;
-            ScreenManager.Game.Components.Remove(playerHUD);
-            //ScreenManager.Game.Components.Remove(playerHUD2);
             ScreenManager.Game.Components.Remove(playerHUD);
             Content.Unload();
         }
@@ -249,14 +236,17 @@ namespace WizardsOrWhatever
         public override void Update(GameTime gameTime, bool otherScreenHasFocus,
                                                        bool coveredByOtherScreen)
         {
-            //-------------------------------------
             KeyboardState current = Keyboard.GetState();
             Vector2 movement = Vector2.Zero;
 
-
-            //-----------------------------------
-
             base.Update(gameTime, false, false);
+
+            //Check if the player is dead
+            //TODO: We need to send a message if the player is dead and somehow make either character invisible (maybe stop drawing it?)
+            if (player.Health == 0)
+            {
+                player.Dead = true;
+            }
 
             // updating the position of the background.
             skyLayer.Move(player.Position, ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
@@ -451,24 +441,9 @@ namespace WizardsOrWhatever
             foreach (CompositeCharacter p in playerMap.Values)
             {
                 p.Draw(spriteBatch);
-            }/*
-            if (player3 != null)
-            {
-                player3.Draw(spriteBatch);
             }
-            if (player4 != null)
-            {
-                player4.Draw(spriteBatch);
-            }*/
 
-
-            //--------NEED TO REWORK--------
             //checks to see if a player is firing through their own input, creates a projectile associated with that player.
-            /* TODO:
-             * Need to add projectile types, this means that it will select a players selected weapon and pass it into projectile.
-             * Based on this we can subtract the nessesary mana / damage / rate of fire
-             * Change if statement to include players mana compared to selected spells requirement
-             */
             if (player.canFire)
             {
                 //Yellow weapon selected
@@ -700,24 +675,6 @@ namespace WizardsOrWhatever
 
                         }
                     }
-                    //pindex = pindex - 1;
-                    /*
-                    if (pindex == 4 && player3 == null)
-                    {
-                        player3 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
-                        writeStream.Position = 0;
-                        writer.Write(p.getData());
-                        SendData(GetDataFromMemoryStream(writeStream));
-                    }
-                    if (pindex == 7 && player4 == null)
-                    {
-                        player4 = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                              Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f));
-                        writeStream.Position = 0;
-                        writer.Write(p.getData());
-                        SendData(GetDataFromMemoryStream(writeStream));
-                    }*/
                 }
 
                 else if (p == Protocol.Disconnected)
@@ -726,7 +683,6 @@ namespace WizardsOrWhatever
                     //System.Diagnostics.Debug.WriteLine(pindex);
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
-                    //player2 = null;
                 }
                 else if (p == Protocol.Movement)
                 {
