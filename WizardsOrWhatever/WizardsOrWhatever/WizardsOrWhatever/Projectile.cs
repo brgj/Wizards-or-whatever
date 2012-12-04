@@ -22,10 +22,18 @@ namespace WizardsOrWhatever
         public float speed = 500;
         private CheckCollision collisionChecker;
         public float level = 1.5f;
+        //Damage multiplier for specific weapons
+        public int damage = 20;
+        //Color of explosion texture
+        public Color color;
+        //delay each shot has
+        public int delay;
+        public int manaCost;
 
         public Projectile(World world, Vector2 position, Texture2D texture, Vector2 size, Vector2 cursPosition, CompositeCharacter player, CheckCollision collisionChecker)
             : base(world, position, texture, size, 0f)
         {
+            this.body.CollisionCategories = Category.Cat1;
             this.collisionChecker = collisionChecker;
             this.cursPosition = cursPosition;
             movements = cursPosition - position;

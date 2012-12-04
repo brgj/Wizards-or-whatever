@@ -37,12 +37,14 @@ namespace WizardsOrWhatever
         private List<ParticleData> particleList = new List<ParticleData>();
         private float level;
         private Vector2 position;
+        private Color color;
 
-        public Explosion(Texture2D explosionTex, float level, Vector2 position)
+        public Explosion(Texture2D explosionTex, float level, Vector2 position, Color color)
         {
             this.explosionTex = explosionTex;
             this.level = level;
             this.position = position;
+            this.color = color;
             AddExplosion();
         }
 
@@ -116,7 +118,7 @@ namespace WizardsOrWhatever
             for (int i = 0; i < particleList.Count; i++)
             {
                 ParticleData particle = particleList[i];
-                spriteBatch.Draw(explosionTex, particle.Position, null, particle.ModColor, i, new Vector2(256, 256), particle.Scaling, SpriteEffects.None, 1);
+                spriteBatch.Draw(explosionTex, particle.Position, null, color, i, new Vector2(256, 256), particle.Scaling, SpriteEffects.None, 1);
             }
         }
 

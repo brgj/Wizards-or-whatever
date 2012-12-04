@@ -163,7 +163,7 @@ namespace WizardsOrWhatever
                 new Vector2(100, ConvertUnits.ToDisplayUnits(100.0f)));
 
             // Load projectile and explosion textures
-            projectileTex = Content.Load<Texture2D>("projectile_fire");
+            projectileTex = Content.Load<Texture2D>("projectile_fire_yellow");
             explosionTex = Content.Load<Texture2D>("explosion");
 
 
@@ -436,7 +436,7 @@ namespace WizardsOrWhatever
             LaunchPlayer(player2, p.Position, ConvertUnits.ToDisplayUnits(p.level));
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
             terrain.RegenerateTerrain();
-            explosions.Add(new Explosion(explosionTex, p.level, p.Position));
+            explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
             projectiles.Remove(p);
         }
 

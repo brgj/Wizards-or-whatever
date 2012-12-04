@@ -88,7 +88,9 @@ namespace WizardsOrWhatever
         //Variable for the alpha transparency on pause
         float pauseAlpha;
 
-        Texture2D projectileTex;
+        Texture2D projectileTexYellow;
+        Texture2D projectileTexRed;
+        Texture2D projectileTexBlue;
         Texture2D explosionTex;
 
         byte id = 27;
@@ -201,7 +203,9 @@ namespace WizardsOrWhatever
 
             ground = new StaticPhysicsObject(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 4.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f + 100), Content.Load<Texture2D>("platformTex"), new Vector2(2000f, 20f));
             // Load projectile and explosion textures
-            projectileTex = Content.Load<Texture2D>("projectile_fire");
+            projectileTexRed = Content.Load<Texture2D>("projectile_fire_red");
+            projectileTexBlue = Content.Load<Texture2D>("projectile_fire_blue");
+            projectileTexYellow = Content.Load<Texture2D>("projectile_fire_yellow");
             explosionTex = Content.Load<Texture2D>("explosion");
 
 
@@ -467,13 +471,40 @@ namespace WizardsOrWhatever
              */
             if (player.canFire)
             {
-                if (player.Mana > 20)
+                //Yellow weapon selected
+                if (player.Weapon == Character.WeaponSelect.Yellow)
                 {
-                    Console.Write("POSITION: " + player.Position + " CURSOR: " + camera.ConvertScreenToWorld(playerHUD.cursorPos) + "\n");
-                    Projectile projectile = new Projectile(world, player.Position, projectileTex, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
-                    player.Mana -= 20;
-                    projectiles.Add(projectile);
+                    if (player.Mana >= YellowProjectile.manaCost)
+                    {
+                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        player.Mana -= YellowProjectile.manaCost;
+                        player.fireDelay = projectile.delay;
+                        projectiles.Add(projectile);
+                    }
                 }
+                //Red weapon selected
+                else if (player.Weapon == Character.WeaponSelect.Red)
+                {
+                    if (player.Mana >= RedProjectile.manaCost)
+                    {
+                        Projectile projectile = new RedProjectile(world, player.Position, projectileTexRed, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        player.Mana -= RedProjectile.manaCost;
+                        player.fireDelay = projectile.delay;
+                        projectiles.Add(projectile);
+                    }
+                }
+                //Blue weapon selected
+                else if (player.Weapon == Character.WeaponSelect.Blue)
+                {
+                    if (player.Mana >= BlueProjectile.manaCost)
+                    {
+                        Projectile projectile = new BlueProjectile(world, player.Position, projectileTexBlue, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        player.Mana -= BlueProjectile.manaCost;
+                        player.fireDelay = projectile.delay;
+                        projectiles.Add(projectile);
+                    }
+                }
+                
                 player.canFire = false;
             }
 
@@ -517,19 +548,21 @@ namespace WizardsOrWhatever
         private void CheckCollision(Projectile p)
         {
              DrawCircleOnMap(p.body.Position, p.level, 1);
-            LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level));
+            LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
             terrain.RegenerateTerrain();
-            explosions.Add(new Explosion(explosionTex, p.level, p.Position));
+            explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
             projectiles.Remove(p);
         }
 
-        private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius)
+        private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius, int damage)
         {
             if (player.Position.X > origin.X - radius && player.Position.Y > origin.Y - radius && player.Position.X < origin.X + radius && player.Position.Y < origin.Y + radius)
             {
                 Vector2 force = player.Position - origin;
                 force = Vector2.Normalize(force) * 10;
                 player.body.ApplyLinearImpulse(force);
+                //Damage the player being hit
+                player.Health -= (int)(Math.Abs(force.X) * damage + Math.Abs(force.Y) * damage);
             }
         }
 

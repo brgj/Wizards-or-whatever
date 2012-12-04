@@ -38,6 +38,7 @@ namespace WizardsOrWhatever
         public bool canFire = false;
         double lastFireTime = 0;
         double currentFireTime = 0;
+        public int fireDelay = 0;
 
         Color CharacterColor
         {
@@ -238,7 +239,7 @@ namespace WizardsOrWhatever
             if(isFiring == true)
             {
                 //TODO: Replace 500 with weapon cooldown time
-                if ((currentFireTime - lastFireTime) >= 500)
+                if ((currentFireTime - lastFireTime) >= fireDelay)
                 {
                     canFire = true;
                     lastFireTime = currentFireTime;
@@ -317,7 +318,7 @@ namespace WizardsOrWhatever
                 KeyboardState keyboardState = Keyboard.GetState();
                 MouseState mouse = Mouse.GetState();
                 //Firing, seperate to fire at any time
-                if (keyboardState.IsKeyDown(Keys.Space))
+                if (mouse.LeftButton == ButtonState.Pressed)
                 {
                     player.isFiring = true;
                 }

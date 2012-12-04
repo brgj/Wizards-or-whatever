@@ -34,9 +34,9 @@ namespace WizardsOrWhatever
         Texture2D box;
 
         //projectile icons
-        Texture2D projectileIcon;
-        Texture2D projectileIcon2;
-        Texture2D projectileIcon3;
+        Texture2D projectileIconYellow;
+        Texture2D projectileIconBlue;
+        Texture2D projectileIconRed;
 
         Character player;
         SpriteBatch spriteBatch;
@@ -66,9 +66,9 @@ namespace WizardsOrWhatever
             mana = content.Load<Texture2D>("HealthBar");
             box = content.Load<Texture2D>("Box");
             crosshair = content.Load<Texture2D>("CrossHair");
-            projectileIcon = content.Load<Texture2D>("projectile_fire");
-            projectileIcon2 = content.Load<Texture2D>("projectile_fire2");
-            projectileIcon3 = content.Load<Texture2D>("projectile_fire3");
+            projectileIconYellow = content.Load<Texture2D>("projectile_fire_yellow");
+            projectileIconBlue = content.Load<Texture2D>("projectile_fire_blue");
+            projectileIconRed = content.Load<Texture2D>("projectile_fire_red");
             //TransitionOnTime = TimeSpan.FromSeconds(1.5);
             //TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
@@ -134,15 +134,15 @@ namespace WizardsOrWhatever
             if (player.Weapon == Character.WeaponSelect.Yellow)
             {
                 //Use the rectangle position to get an object in the center of the box
-                spriteBatch.Draw(projectileIcon, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
+                spriteBatch.Draw(projectileIconYellow, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
             else if (player.Weapon == Character.WeaponSelect.Blue)
             {
-                spriteBatch.Draw(projectileIcon2, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
+                spriteBatch.Draw(projectileIconBlue, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
             else if (player.Weapon == Character.WeaponSelect.Red)
             {
-                spriteBatch.Draw(projectileIcon3, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
+                spriteBatch.Draw(projectileIconRed, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
 
             spriteBatch.End();
