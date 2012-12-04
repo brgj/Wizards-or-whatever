@@ -98,7 +98,7 @@ namespace WizardsOrWhatever
                     float relAge = timeAlive / particle.MaxAge;
                     particle.Position = 0.5f * particle.Acceleration * relAge * relAge + particle.Direction * relAge + particle.OriginalPosition;
                     float invAge = 1.0f - relAge;
-                    particle.ModColor = new Color(new Vector4(invAge, invAge, invAge, invAge));
+                    particle.ModColor = new Color(new Vector4(invAge * (color.R / 255), invAge * (color.G / 255), invAge * (color.B / 255), invAge * (color.A / 255)));
                     Vector2 positionFromCenter = particle.Position - particle.OriginalPosition;
                     float distance = positionFromCenter.Length();
                     particle.Scaling = (50.0f + distance) / 200.0f;
@@ -118,7 +118,7 @@ namespace WizardsOrWhatever
             for (int i = 0; i < particleList.Count; i++)
             {
                 ParticleData particle = particleList[i];
-                spriteBatch.Draw(explosionTex, particle.Position, null, color, i, new Vector2(256, 256), particle.Scaling, SpriteEffects.None, 1);
+                spriteBatch.Draw(explosionTex, particle.Position, null, particle.ModColor, i, new Vector2(256, 256), particle.Scaling, SpriteEffects.None, 1);
             }
         }
 
