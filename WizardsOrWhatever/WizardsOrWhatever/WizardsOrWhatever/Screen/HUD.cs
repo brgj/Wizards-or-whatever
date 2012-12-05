@@ -164,7 +164,7 @@ namespace WizardsOrWhatever
                 gameTimer.timerActive = false;
             }
 
-            spriteBatch.DrawString(HUDfont, gameTimer.display, new Vector2(GraphicsDevice.Viewport.Width / 2 + 20, 50), Color.Red);
+            spriteBatch.DrawString(HUDfont, gameTimer.display, new Vector2(GraphicsDevice.Viewport.Width / 2, 20), Color.Red, 0, new Vector2(0, 0), .5f, SpriteEffects.None, 0);
 
             if (player.Dead)
             {

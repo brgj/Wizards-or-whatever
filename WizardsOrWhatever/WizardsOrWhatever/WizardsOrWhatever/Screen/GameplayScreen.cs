@@ -208,6 +208,13 @@ namespace WizardsOrWhatever
         {
             base.Update(gameTime, otherScreenHasFocus, false);
 
+            //Check if the player is dead
+            //TODO: We need to send a message if the player is dead and somehow make either character invisible (maybe stop drawing it?)
+            if (player.Health == 0)
+            {
+                player.Dead = true;
+            }
+
             // updating the position of the background.
             //Vector2 viewPort = new Vector2(ScreenManager.GraphicsDevice.Viewport.X, ScreenManager.GraphicsDevice.Viewport.Y);
             skyLayer.Move(player.Position,ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
