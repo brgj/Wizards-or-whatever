@@ -50,7 +50,9 @@ namespace WizardsOrWhatever
 
         //Hud respawn timer
         public RespawnTimer timer;
+        public GameTimer gameTimer;
         SpriteFont HUDfont;
+        SpriteFont timerFont;
 
         #endregion
 
@@ -74,7 +76,9 @@ namespace WizardsOrWhatever
             projectileIconBlue = content.Load<Texture2D>("projectile_fire_blue");
             projectileIconRed = content.Load<Texture2D>("projectile_fire_red");
             HUDfont = content.Load<SpriteFont>("gamefont");
+            timerFont = content.Load<SpriteFont>("gamefont");
             timer = new RespawnTimer();
+            gameTimer = new GameTimer();
         }
 
         #endregion
@@ -149,6 +153,19 @@ namespace WizardsOrWhatever
                 spriteBatch.Draw(projectileIconRed, new Rectangle((16 + health.Width) + 5, 20, 20, 20), Color.White);
             }
 
+            if (!gameTimer.timerActive)
+            {
+                gameTimer.set(gameTime, 2, 15);
+                gameTimer.timerActive = true;
+            }
+            if (gameTimer.isComplete)
+            {
+                gameTimer.reset();
+                gameTimer.timerActive = false;
+            }
+
+            spriteBatch.DrawString(HUDfont, gameTimer.display, new Vector2(GraphicsDevice.Viewport.Width / 2 + 20, 50), Color.Red);
+
             if (player.Dead)
             {
                 if (!timer.timerActive)
@@ -156,7 +173,7 @@ namespace WizardsOrWhatever
                     timer.set(gameTime, 10);
                     timer.timerActive = true;
                 }
-                if (timer.checkTimer(gameTime))
+                if (timer.isComplete)
                 {
                     timer.reset();
                     player.respawn();

@@ -356,6 +356,7 @@ namespace WizardsOrWhatever
                 writer.Write((byte)2);
                 writer.Write(player.Position.X);
                 writer.Write(player.Position.Y);
+                writer.Write(player.Dead);
                 writer.Write((byte)player.Direction);
                 writer.Write((byte)player.State);
                 lock (client.GetStream())
@@ -364,6 +365,10 @@ namespace WizardsOrWhatever
                 }
 
                 player.Update(gameTime);
+                foreach (CompositeCharacter p in playerMap.Values)
+                {
+                    p.Update(gameTime);
+                }
 
                 //----------------------------------
 
@@ -688,18 +693,20 @@ namespace WizardsOrWhatever
                 {
                     float px = reader.ReadSingle();
                     float py = reader.ReadSingle();
+                    bool dead = reader.ReadBoolean();
                     Character.CharDirection dir = (Character.CharDirection)reader.ReadByte();
                     Character.CharState state = (Character.CharState)reader.ReadByte();
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
 
+                    playerMap[id].Dead = dead;
                     playerMap[id].Direction = dir;
                     playerMap[id].State = state;
                     playerMap[id].Position = new Vector2(px, py);
                 }
                 else if (p == Protocol.AddCharacter)
                 {
-                     byte numPlayers = reader.ReadByte();
+                    byte numPlayers = reader.ReadByte();
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
                     CompositeCharacter newPlayer;

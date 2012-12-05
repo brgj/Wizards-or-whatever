@@ -14,29 +14,32 @@ using System.Timers;
 
 namespace WizardsOrWhatever
 {
-    public class RespawnTimer
+    public class GameTimer
     {
-        private int start;
-        private int end;
+       private int start;
+        private int endSec;
+        private int endMin;
         public Boolean isComplete { get; set; }
         public Boolean timerActive { get; set; }
         public String display { get; set; }
         public static Timer timeElapsed;
 
-        public RespawnTimer()
+        public GameTimer()
         {
             this.start = 0;
-            this.end = 0;
+            this.endSec = 0;
+            this.endMin = 0;
             this.timerActive = false;
             this.isComplete = false;
         }
 
-        public void set(GameTime gameTime, int seconds)
+        public void set(GameTime gameTime, int minutes, int seconds)
         {
             start = gameTime.TotalGameTime.Seconds;
-            end = seconds;
-            display = "Respawn: " + end.ToString();
-            timeElapsed = new Timer(seconds * 1000);
+            endSec = seconds;
+            endMin = minutes;
+            display = endMin.ToString() + ":" + endSec.ToString();
+            timeElapsed = new Timer((seconds + (60 * minutes)) * 1000);
             timeElapsed.Elapsed += new ElapsedEventHandler(timer_Elapsed);
             timeElapsed.Enabled = true;
             timeElapsed.Interval = 1000;
@@ -45,20 +48,26 @@ namespace WizardsOrWhatever
 
         void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
-            end--;
-            if (end < 0)
+            endSec--;
+            if (endSec < 0)
             {
-                isComplete = true;
-                timeElapsed.Stop();
+                endSec = 59;
+                endMin--;
+                if (endMin < 0)
+                {
+                    isComplete = true;
+                    timeElapsed.Stop();
+                }
             }
-            display = "Respawn: " + end.ToString();
+            display = endMin.ToString() + ":" + endSec.ToString();
         }
 
         public void reset()
         {
             isComplete = false;
             start = 0;
-            end = 0;
+            endSec = 0;
+            endMin = 0;
             display = "";
         }
     }

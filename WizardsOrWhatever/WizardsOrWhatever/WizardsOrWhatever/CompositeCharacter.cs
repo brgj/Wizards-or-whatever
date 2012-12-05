@@ -23,10 +23,10 @@ namespace WizardsOrWhatever
         public float centerOffset;
         int texWidth;
         int texHeight;
-        private int spriteX = 0;
-        private int spriteY = 0;
-        private int prevSpriteX = 0;
-        private int prevSpriteY = 0;
+        public int spriteX = 0;
+        public int spriteY = 0;
+        public int prevSpriteX = 0;
+        public int prevSpriteY = 0;
         protected float spriteTimer = 0f;
         protected float spriteInterval = 100f;
         Input input;
