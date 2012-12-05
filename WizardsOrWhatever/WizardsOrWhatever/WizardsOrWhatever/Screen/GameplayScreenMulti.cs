@@ -204,9 +204,6 @@ namespace WizardsOrWhatever
 
             // ----------------------------------------------------------
 
-            // Sleep for the loading screen
-            Thread.Sleep(500);
-
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
             // it should not try to catch up.
@@ -354,7 +351,7 @@ namespace WizardsOrWhatever
 
 
                 writeStream.Position = 0;
-                writer.Write((byte)2);
+                writer.Write((byte)Protocol.Movement);
                 writer.Write(player.Position.X);
                 writer.Write(player.Position.Y);
                 writer.Write(player.Dead);
@@ -457,7 +454,7 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= YellowProjectile.manaCost)
                     {
-                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, SendModifyTerrainMessage);
                         player.Mana -= YellowProjectile.manaCost;
                         player.fireDelay = projectile.delay;
                         projectiles.Add(projectile);
@@ -526,6 +523,19 @@ namespace WizardsOrWhatever
                 DebugView.AppendFlags(flags);
         }
 
+        private void SendModifyTerrainMessage(Projectile p)
+        {
+            writeStream.Position = 0;
+            writer.Write((byte)Protocol.ModifyTerrain);
+            writer.Write(p.Position.X);
+            writer.Write(p.Position.Y);
+            lock (client.GetStream())
+            {
+                SendData(GetDataFromMemoryStream(writeStream));
+            }
+            CheckCollision(p);
+        }
+
         private void CheckCollision(Projectile p)
         {
              DrawCircleOnMap(p.body.Position, p.level, 1);
@@ -533,6 +543,11 @@ namespace WizardsOrWhatever
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
             projectiles.Remove(p);
+        }
+
+        private void fartbutt(Projectile p)
+        {
+
         }
 
         private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius, int damage)
@@ -579,8 +594,6 @@ namespace WizardsOrWhatever
         BinaryWriter writer;
         private void StreamReceived(IAsyncResult ar)
         {
-            //MessageBox.Show("Message Received....Thank you for the message, server!");
-
             int bytesRead = 0;
 
             try
@@ -738,8 +751,14 @@ namespace WizardsOrWhatever
 
                 else if (p == Protocol.ModifyTerrain)
                 {
+                    float px = reader.ReadSingle();
+                    float py = reader.ReadSingle();
+
                     byte id = reader.ReadByte();
                     string ip = reader.ReadString();
+
+                    Projectile projectile = new YellowProjectile(world, new Vector2(px, py), projectileTexYellow, new Vector2(10.0f, 10.0f), new Vector2(0, 0), player, fartbutt);
+                    CheckCollision(projectile);
                 }
             }
             catch (Exception e)
