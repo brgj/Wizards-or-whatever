@@ -175,7 +175,7 @@ namespace WizardsOrWhatever
 
             client = new TcpClient();
             client.NoDelay = true;
-            IPAddress ipadd = System.Net.IPAddress.Parse("127.0.0.1");
+            IPAddress ipadd = System.Net.IPAddress.Parse("192.168.1.64");
             client.Connect(ipadd, PORT);
             readBuffer = new byte[BUFFER_SIZE];
             client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
@@ -584,7 +584,7 @@ namespace WizardsOrWhatever
         #region Networking
         int pindex = 1;
         TcpClient client;
-        string IP = "142.232.150.32";
+        string IP = "192.168.1.64";
         int PORT = 1490;
         int BUFFER_SIZE = 2048;
         byte[] readBuffer;

@@ -37,6 +37,10 @@ namespace WizardsOrWhatever
         ContentManager Content;
         SpriteFont gameFont;
 
+        float SpawnTimer = 0f;
+
+        const float SpawnTime = 5000f;
+
         // Backgrounds
         GameBackground skyLayer;
 
@@ -46,8 +50,8 @@ namespace WizardsOrWhatever
 
         //Camera object that follows the character
         Camera2D camera;
-        //Game character controlled by user. TODO: Use a list for offline multiplayer and HUD
-        CompositeCharacter player, player2;
+        //Game character controlled by user.
+        CompositeCharacter player;
         HUD playerHUD;
 
         //Walls. Placeholders for terrain.
@@ -59,6 +63,9 @@ namespace WizardsOrWhatever
 
         //Explosions
         List<Explosion> explosions = new List<Explosion>();
+
+        //Enemies
+        List<Enemy> enemies = new List<Enemy>();
 
         //List of paddles with different properties to be drawn to screen. Placeholder for actual interesting content.
         //List<PhysicsObject> paddles;
@@ -84,7 +91,7 @@ namespace WizardsOrWhatever
         Texture2D projectileTexRed;
         Texture2D projectileTexBlue;
         Texture2D explosionTex;
-
+        Texture2D enemyTex;
 
         /// <summary>
         /// Constructor.
@@ -149,7 +156,6 @@ namespace WizardsOrWhatever
 
 
             player = new CompositeCharacter(world, new Vector2(0, 0), Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
-            player2 = new CompositeCharacter(world, new Vector2(0, 0), Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
 
             //Create HUD
             playerHUD = new HUD(ScreenManager.Game, player, ScreenManager.Game.Content, ScreenManager.SpriteBatch);
@@ -169,7 +175,7 @@ namespace WizardsOrWhatever
             projectileTexBlue = Content.Load<Texture2D>("projectile_fire_blue");
             projectileTexYellow = Content.Load<Texture2D>("projectile_fire_yellow");
             explosionTex = Content.Load<Texture2D>("explosion");
-
+            enemyTex = Content.Load<Texture2D>("enemy_new");
 
 
             // ----------------------------------------------------------
@@ -207,6 +213,15 @@ namespace WizardsOrWhatever
                                                        bool coveredByOtherScreen)
         {
             base.Update(gameTime, otherScreenHasFocus, false);
+
+            SpawnTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+
+            if (SpawnTimer > SpawnTime)
+            {
+                enemies.Add(new Enemy(world, new Vector2(ConvertUnits.ToDisplayUnits(-98.0f), 0), enemyTex, new Vector2(45, 50)));
+                enemies.Add(new Enemy(world, new Vector2(ConvertUnits.ToDisplayUnits(98.0f), 0), enemyTex, new Vector2(45, 50)));
+                SpawnTimer = 2500f;
+            }
 
             //Check if the player is dead
             //TODO: We need to send a message if the player is dead and somehow make either character invisible (maybe stop drawing it?)
@@ -310,6 +325,15 @@ namespace WizardsOrWhatever
                 }
 
                 player.Update(gameTime);
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    enemies[i].Update(gameTime, player.Position);
+                    if (enemies[i].IsDisposed)
+                    {
+                        explosions.Add(new Explosion(explosionTex, 2, enemies[i].Position, Color.White));
+                        enemies.RemoveAt(i);
+                    }
+                }
                 camera.Update(gameTime);
 
                 //Notifies the world that time has progressed.
@@ -382,8 +406,11 @@ namespace WizardsOrWhatever
             rightWall.Draw(spriteBatch);
 
             player.Draw(spriteBatch);
-            player2.Draw(spriteBatch);
 
+            foreach (Enemy e in enemies)
+            {
+                e.Draw(spriteBatch);
+            }
 
             //--------NEED TO REWORK--------
             //checks to see if a player is firing through their own input, creates a projectile associated with that player.
@@ -471,8 +498,11 @@ namespace WizardsOrWhatever
         private void CheckCollision(Projectile p)
         {
             DrawCircleOnMap(p.body.Position, p.level, 1);
-            LaunchPlayer(player2, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
+            foreach (Enemy e in enemies)
+            {
+                LaunchPlayer(e, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
+            }
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
             projectiles.Remove(p);

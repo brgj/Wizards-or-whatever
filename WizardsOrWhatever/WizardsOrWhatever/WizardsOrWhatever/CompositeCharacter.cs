@@ -49,7 +49,7 @@ namespace WizardsOrWhatever
             set { charColor = value; }
         }
 
-        int SpriteX
+        public int SpriteX
         {
             get
             {
@@ -61,7 +61,7 @@ namespace WizardsOrWhatever
                 spriteX = value;
             }
         }
-        int SpriteY
+        public int SpriteY
         {
             get
             {
@@ -111,6 +111,9 @@ namespace WizardsOrWhatever
             body.OnCollision += new OnCollisionEventHandler(OnBodyCollision);
             wheel.OnCollision += new OnCollisionEventHandler(OnWheelCollision);
             body.OnSeparation += new OnSeparationEventHandler(body_OnSeparation);
+            
+            body.CollisionCategories = Category.Cat30;
+            wheel.CollisionCategories = Category.Cat30;
         }
 
         /// <summary>
@@ -177,6 +180,8 @@ namespace WizardsOrWhatever
         /// <returns></returns>
         public bool OnBodyCollision(Fixture fix1, Fixture fix2, Contact contact)
         {
+            if (fix2.CollisionCategories == Category.Cat31)
+                Health -= 30;
             if (State == CharState.Jumping)
             {
                 State = CharState.Wallslide;
@@ -255,7 +260,7 @@ namespace WizardsOrWhatever
             //END TESTING
         }
 
-        private void UpdateSprite()
+        protected void UpdateSprite()
         {
             if(State == CharState.Running)
             {
@@ -283,7 +288,7 @@ namespace WizardsOrWhatever
             }
         }
 
-        private Rectangle GetSpriteRect()
+        protected Rectangle GetSpriteRect()
         {
             return new Rectangle(SpriteX * texWidth, SpriteY * texHeight, texWidth, texHeight);
         }
