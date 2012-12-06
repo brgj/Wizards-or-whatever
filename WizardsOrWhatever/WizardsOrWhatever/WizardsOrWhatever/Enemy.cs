@@ -35,7 +35,7 @@ namespace WizardsOrWhatever
             }
 
             motor.MotorSpeed = runSpeed * (Position.X < playerPos.X ? 1 : -1);
-            if (Health <= 0)
+            if (Health <= 0 || CheckBoundaries())
                 Dispose();
         }
 

@@ -94,11 +94,7 @@ namespace WizardsOrWhatever
 
         bool terrainMaster = false;
 
-        int index;
-
-        byte[] array;
-
-        
+        byte projectileId;
 
         /// <summary>
         /// Constructor.
@@ -250,12 +246,16 @@ namespace WizardsOrWhatever
             skyLayer.Move(player.Position, ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
 
             //UPDATES EACH PROJECTILE IN THE GAME
-            foreach (Projectile projectile in projectiles)
+            for (int i = projectiles.Count-1; i >= 0; i--)
             {
-                projectile.UpdateProjectile(gameTime);
+                projectiles[i].UpdateProjectile(gameTime);
+                if (projectiles[i].IsDisposed)
+                {
+                    explosions.Add(new Explosion(explosionTex, projectiles[i].level, projectiles[i].Position, projectiles[i].color));
+                    projectiles.RemoveAt(i);
+                }
             }
-
-            for (int i = 0; i < explosions.Count; i++)
+            for (int i = explosions.Count-1; i >= 0; i--)
             {
                 if (!explosions[i].UpdateParticles(gameTime))
                 {
@@ -344,7 +344,6 @@ namespace WizardsOrWhatever
                 //Notifies the world that time has progressed.
                 //Collision detection, integration, and constraint solution are performed
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
-
                 //---------------------------------
 
                 //player.move(movement) = ;
@@ -454,10 +453,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= YellowProjectile.manaCost)
                     {
-                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, SendModifyTerrainMessage);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= YellowProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)0);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 //Red weapon selected
@@ -465,10 +479,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= RedProjectile.manaCost)
                     {
-                        Projectile projectile = new RedProjectile(world, player.Position, projectileTexRed, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new RedProjectile(world, player.Position, projectileTexRed, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= RedProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)1);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 //Blue weapon selected
@@ -476,10 +505,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= BlueProjectile.manaCost)
                     {
-                        Projectile projectile = new BlueProjectile(world, player.Position, projectileTexBlue, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new BlueProjectile(world, player.Position, projectileTexBlue, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= BlueProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)2);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 
@@ -527,6 +571,7 @@ namespace WizardsOrWhatever
         {
             writeStream.Position = 0;
             writer.Write((byte)Protocol.ModifyTerrain);
+            writer.Write((byte)p.id);
             writer.Write(p.Position.X);
             writer.Write(p.Position.Y);
             lock (client.GetStream())
@@ -534,6 +579,7 @@ namespace WizardsOrWhatever
                 SendData(GetDataFromMemoryStream(writeStream));
             }
             CheckCollision(p);
+            projectiles.Remove(p);
         }
 
         private void CheckCollision(Projectile p)
@@ -542,12 +588,6 @@ namespace WizardsOrWhatever
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
-            projectiles.Remove(p);
-        }
-
-        private void fartbutt(Projectile p)
-        {
-
         }
 
         private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius, int damage)
@@ -704,6 +744,8 @@ namespace WizardsOrWhatever
                         //System.Diagnostics.Debug.WriteLine(pindex);
                         byte id = reader.ReadByte();
                         string ip = reader.ReadString();
+                        playerMap[id].Dispose();
+                        playerMap.Remove(id);
                     }
                     else if (p == Protocol.Movement)
                     {
@@ -746,25 +788,63 @@ namespace WizardsOrWhatever
                             double s3 = reader.ReadDouble();
                             byte id = reader.ReadByte();
                             string ip = reader.ReadString();
-
                             terrain.CreateTerrain(new Vector2(0, 0), s1, s2, s3);
                         }
+                    }
+                    else if (p == Protocol.FireProjectile)
+                    {
+                        byte color = reader.ReadByte();
+                        byte pId = reader.ReadByte();
+                        float cx = reader.ReadSingle();
+                        float cy = reader.ReadSingle();
+                        float px = reader.ReadSingle();
+                        float py = reader.ReadSingle();
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
+                        Projectile projectile;
+
+                        switch (color)
+                        {
+                            case 0:
+                                projectile = new YellowProjectile(world, new Vector2(px, py), projectileTexYellow,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            case 1:
+                                projectile = new RedProjectile(world, new Vector2(px, py), projectileTexRed,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            case 2:
+                                projectile = new BlueProjectile(world, new Vector2(px, py), projectileTexBlue,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            default:
+                                projectile = new Projectile(world, new Vector2(px, py), projectileTexYellow,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id], null);
+                                break;
+                        }
+                        projectile.id = ((id+1) * 100) + pId;
+                        projectile.body.CollidesWith = Category.None;
+                        projectiles.Add(projectile);
                     }
 
                     else if (p == Protocol.ModifyTerrain)
                     {
+                        byte pId = reader.ReadByte();
                         float px = reader.ReadSingle();
                         float py = reader.ReadSingle();
 
                         byte id = reader.ReadByte();
                         string ip = reader.ReadString();
 
-                        Projectile projectile = new YellowProjectile(world, new Vector2(px, py), projectileTexYellow, new Vector2(10.0f, 10.0f), new Vector2(0, 0), player, fartbutt);
-                        CheckCollision(projectile);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Fuck you");
+                        for (int i = 0; i < projectiles.Count; i++ )
+                        {
+                            if (projectiles[i].id == ((id + 1) * 100) + pId)
+                            {
+                                CheckCollision(projectiles[i]);
+                                projectiles.RemoveAt(i);
+                            }
+                        }
+                        
                     }
 
                     oldP = p;

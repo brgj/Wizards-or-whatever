@@ -235,11 +235,15 @@ namespace WizardsOrWhatever
             skyLayer.Move(player.Position,ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
 
             //UPDATES EACH PROJECTILE IN THE GAME
-            foreach (Projectile projectile in projectiles)
+            for (int i = 0; i < projectiles.Count; i++)
             {
-                projectile.UpdateProjectile(gameTime);
+                projectiles[i].UpdateProjectile(gameTime);
+                if (projectiles[i].IsDisposed)
+                {
+                    explosions.Add(new Explosion(explosionTex, projectiles[i].level, projectiles[i].Position, projectiles[i].color));
+                    projectiles.RemoveAt(i);
+                }
             }
-
             for(int i = 0; i < explosions.Count; i++)
             {
                 if (!explosions[i].UpdateParticles(gameTime))

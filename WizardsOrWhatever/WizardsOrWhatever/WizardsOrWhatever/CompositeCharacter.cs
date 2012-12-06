@@ -258,6 +258,8 @@ namespace WizardsOrWhatever
             }
 
             //END TESTING
+            if (CheckBoundaries())
+                Dead = true;
         }
 
         protected void UpdateSprite()
@@ -319,6 +321,10 @@ namespace WizardsOrWhatever
             Dead = false;
             Health = maxHealth;
             Mana = maxMana;
+            body.LinearVelocity = Vector2.Zero;
+            wheel.LinearVelocity = Vector2.Zero;
+            body.Position = Vector2.Zero;
+            wheel.Position = Vector2.Zero;
         }
 
         public void move(GamePadState gamePad)

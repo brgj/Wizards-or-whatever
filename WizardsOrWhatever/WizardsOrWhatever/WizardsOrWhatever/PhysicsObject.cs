@@ -35,6 +35,11 @@ namespace WizardsOrWhatever
             SetUpPhysics(world, position, mass);
         }
 
+        public bool CheckBoundaries()
+        {
+            return body.Position.X > 100 || body.Position.X < -100 || body.Position.Y > 150 || body.Position.Y < -150;
+        }
+
         protected virtual void SetUpPhysics(World world, Vector2 position, float mass)
         {
             body = BodyFactory.CreateRectangle(world, size.X, size.Y, mass, ConvertUnits.ToSimUnits(position));

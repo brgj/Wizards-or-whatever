@@ -29,11 +29,12 @@ namespace WizardsOrWhatever
         //delay each shot has
         public int delay;
         public int manaCost;
+        public int id;
 
         public Projectile(World world, Vector2 position, Texture2D texture, Vector2 size, Vector2 cursPosition, CompositeCharacter player, CheckCollision collisionChecker)
             : base(world, position, texture, size, 0f)
         {
-            this.body.CollisionCategories = Category.Cat1;
+            this.body.CollisionCategories = Category.Cat24;
             this.collisionChecker = collisionChecker;
             this.cursPosition = cursPosition;
             movements = cursPosition - position;
@@ -51,12 +52,15 @@ namespace WizardsOrWhatever
             body.IgnoreGravity = true;
             body.IsBullet = true;
             body.LinearVelocity = movements + player.body.LinearVelocity;
-            body.OnCollision += new OnCollisionEventHandler(OnProjectileCollision);
+            if(collisionChecker != null)
+                body.OnCollision += new OnCollisionEventHandler(OnProjectileCollision);
         }
 
         public void UpdateProjectile(GameTime gameTime)
         {
             Position += movements * speed * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (CheckBoundaries())
+                Dispose();
         }
 
         public bool OnProjectileCollision(Fixture fix1, Fixture fix2, Contact contact)

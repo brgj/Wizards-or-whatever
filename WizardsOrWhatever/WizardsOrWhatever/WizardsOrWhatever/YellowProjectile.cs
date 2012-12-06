@@ -26,5 +26,8 @@ namespace WizardsOrWhatever
             manaCost = 20;
             delay = 500;
         }
+
+        public YellowProjectile(World world, Vector2 position, Texture2D texture, Vector2 size, Vector2 cursPosition, CompositeCharacter player)
+            : this(world, position, texture, size, cursPosition, player, null) { }
     }
 }
