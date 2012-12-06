@@ -150,7 +150,9 @@ namespace WizardsOrWhatever
 
             // Back ground stuff --------------------------------
             List<Texture2D> list = new List<Texture2D>();
-            list.Add(ScreenManager.Game.Content.Load<Texture2D>("GBackground"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("Sky"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("trees"));
+            list.Add(ScreenManager.Game.Content.Load<Texture2D>("Grass"));
             skyLayer = new GameBackground(list, camera.Position)
             {
                 Height = ScreenManager.GraphicsDevice.Viewport.Height,
@@ -175,7 +177,7 @@ namespace WizardsOrWhatever
 
             client = new TcpClient();
             client.NoDelay = true;
-            IPAddress ipadd = System.Net.IPAddress.Parse("192.168.1.64");
+            IPAddress ipadd = System.Net.IPAddress.Parse("169.254.169.231");
             client.Connect(ipadd, PORT);
             readBuffer = new byte[BUFFER_SIZE];
             client.GetStream().BeginRead(readBuffer, 0, BUFFER_SIZE, StreamReceived, null);
