@@ -94,11 +94,7 @@ namespace WizardsOrWhatever
 
         bool terrainMaster = false;
 
-        int index;
-
-        byte[] array;
-
-        
+        byte projectileId;
 
         /// <summary>
         /// Constructor.
@@ -252,12 +248,16 @@ namespace WizardsOrWhatever
             skyLayer.Move(player.Position, ScreenManager.GraphicsDevice.Viewport.Height, ScreenManager.GraphicsDevice.Viewport.Width);
 
             //UPDATES EACH PROJECTILE IN THE GAME
-            foreach (Projectile projectile in projectiles)
+            for (int i = projectiles.Count-1; i >= 0; i--)
             {
-                projectile.UpdateProjectile(gameTime);
+                projectiles[i].UpdateProjectile(gameTime);
+                if (projectiles[i].IsDisposed)
+                {
+                    explosions.Add(new Explosion(explosionTex, projectiles[i].level, projectiles[i].Position, projectiles[i].color));
+                    projectiles.RemoveAt(i);
+                }
             }
-
-            for (int i = 0; i < explosions.Count; i++)
+            for (int i = explosions.Count-1; i >= 0; i--)
             {
                 if (!explosions[i].UpdateParticles(gameTime))
                 {
@@ -346,7 +346,6 @@ namespace WizardsOrWhatever
                 //Notifies the world that time has progressed.
                 //Collision detection, integration, and constraint solution are performed
                 world.Step((float)gameTime.ElapsedGameTime.TotalSeconds);
-
                 //---------------------------------
 
                 //player.move(movement) = ;
@@ -456,10 +455,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= YellowProjectile.manaCost)
                     {
-                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, SendModifyTerrainMessage);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new YellowProjectile(world, player.Position, projectileTexYellow, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= YellowProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)0);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 //Red weapon selected
@@ -467,10 +481,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= RedProjectile.manaCost)
                     {
-                        Projectile projectile = new RedProjectile(world, player.Position, projectileTexRed, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new RedProjectile(world, player.Position, projectileTexRed, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= RedProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)1);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 //Blue weapon selected
@@ -478,10 +507,25 @@ namespace WizardsOrWhatever
                 {
                     if (player.Mana >= BlueProjectile.manaCost)
                     {
-                        Projectile projectile = new BlueProjectile(world, player.Position, projectileTexBlue, new Vector2(10.0f, 10.0f), ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos)), player, CheckCollision);
+                        Vector2 cPos = ConvertUnits.ToDisplayUnits(camera.ConvertScreenToWorld(playerHUD.cursorPos));
+                        Projectile projectile = new BlueProjectile(world, player.Position, projectileTexBlue, new Vector2(10.0f, 10.0f), cPos, player, SendModifyTerrainMessage);
+                        projectile.id = projectileId;
                         player.Mana -= BlueProjectile.manaCost;
                         player.fireDelay = projectile.delay;
+                        writeStream.Position = 0;
+                        writer.Write((byte)Protocol.FireProjectile);
+                        writer.Write((byte)2);
+                        writer.Write((byte)projectileId);
+                        writer.Write(cPos.X);
+                        writer.Write(cPos.Y);
+                        writer.Write(projectile.Position.X);
+                        writer.Write(projectile.Position.Y);
+                        lock (client.GetStream())
+                        {
+                            SendData(GetDataFromMemoryStream(writeStream));
+                        }
                         projectiles.Add(projectile);
+                        projectileId = (byte)((projectileId + 1) % 100);
                     }
                 }
                 
@@ -529,6 +573,7 @@ namespace WizardsOrWhatever
         {
             writeStream.Position = 0;
             writer.Write((byte)Protocol.ModifyTerrain);
+            writer.Write((byte)p.id);
             writer.Write(p.Position.X);
             writer.Write(p.Position.Y);
             lock (client.GetStream())
@@ -536,6 +581,7 @@ namespace WizardsOrWhatever
                 SendData(GetDataFromMemoryStream(writeStream));
             }
             CheckCollision(p);
+            projectiles.Remove(p);
         }
 
         private void CheckCollision(Projectile p)
@@ -544,12 +590,6 @@ namespace WizardsOrWhatever
             LaunchPlayer(player, p.Position, ConvertUnits.ToDisplayUnits(p.level), p.damage);
             terrain.RegenerateTerrain();
             explosions.Add(new Explosion(explosionTex, p.level, p.Position, p.color));
-            projectiles.Remove(p);
-        }
-
-        private void fartbutt(Projectile p)
-        {
-
         }
 
         private void LaunchPlayer(CompositeCharacter player, Vector2 origin, float radius, int damage)
@@ -586,7 +626,7 @@ namespace WizardsOrWhatever
         #region Networking
         int pindex = 1;
         TcpClient client;
-        string IP = "192.168.1.64";
+        string IP = "127.0.0.1";
         int PORT = 1490;
         int BUFFER_SIZE = 2048;
         byte[] readBuffer;
@@ -633,141 +673,191 @@ namespace WizardsOrWhatever
             readStream.Write(data, 0, data.Length);//read data
             readStream.Position = 0;
             Protocol p;
-            try
+            while (readStream.Position != data.Length)
             {
-                p = (Protocol)reader.ReadByte();
-                /*if (GameScreen.isExiting)
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine
-                }*/
-                if (p == Protocol.Initialize)
-                {
-                    id = reader.ReadByte();
-                    //if (id == 0)
-                    //    terrain.CreateRandomTerrain(new Vector2(0, 0));
-                }
-                else if (p == Protocol.Connected)
-                {
-                    lock (client.GetStream())
+                    p = (Protocol)reader.ReadByte();
+                    /*if (GameScreen.isExiting)
                     {
-                        terrainMaster = true;
-                        foreach (byte otherID in playerMap.Keys)
+                        System.Diagnostics.Debug.WriteLine
+                    }*/
+                    if (p == Protocol.Initialize)
+                    {
+                        id = reader.ReadByte();
+                        //if (id == 0)
+                        //    terrain.CreateRandomTerrain(new Vector2(0, 0));
+                    }
+                    else if (p == Protocol.Connected)
+                    {
+                        lock (client.GetStream())
                         {
-                            if (otherID < this.id)
+                            terrainMaster = true;
+                            foreach (byte otherID in playerMap.Keys)
                             {
-                                terrainMaster = false;
-                                break;
+                                if (otherID < this.id)
+                                {
+                                    terrainMaster = false;
+                                    break;
+                                }
+                            }
+                            //pindex++;
+                            System.Diagnostics.Debug.WriteLine(pindex);
+                            byte id = reader.ReadByte();
+                            string ip = reader.ReadString();
+                            ScreenManager.CharacterColor = Color.White;
+
+
+
+                            CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                                    Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
+                            newPlayer.body.IgnoreGravity = true;
+                            newPlayer.wheel.IgnoreGravity = true;
+                            newPlayer.body.CollidesWith = Category.Cat24;
+                            newPlayer.wheel.CollidesWith = Category.Cat24;
+                            playerMap.Add(id, newPlayer);
+
+                            writeStream.Position = 0;
+                            writer.Write((byte)Protocol.AddCharacter);
+                            writer.Write((byte)playerMap.Count);
+                            SendData(GetDataFromMemoryStream(writeStream));
+                            try
+                            {
+                                if (terrainMaster)
+                                {
+                                    writeStream.Position = 0;
+                                    writer.Write((byte)Protocol.CreateTerrain);
+                                    writer.Write(terrain.seed1);
+                                    writer.Write(terrain.seed2);
+                                    writer.Write(terrain.seed3);
+                                    SendData(GetDataFromMemoryStream(writeStream));
+                                }
+                            }
+                            catch (Exception e)
+                            {
+
                             }
                         }
-                        //pindex++;
-                        System.Diagnostics.Debug.WriteLine(pindex);
+                    }
+
+                    else if (p == Protocol.Disconnected)
+                    {
+                        //pindex--;
+                        //System.Diagnostics.Debug.WriteLine(pindex);
                         byte id = reader.ReadByte();
                         string ip = reader.ReadString();
-                        ScreenManager.CharacterColor = Color.White;
+                        playerMap[id].Dispose();
+                        playerMap.Remove(id);
+                    }
+                    else if (p == Protocol.Movement)
+                    {
+                        float px = reader.ReadSingle();
+                        float py = reader.ReadSingle();
+                        bool dead = reader.ReadBoolean();
+                        Character.CharDirection dir = (Character.CharDirection)reader.ReadByte();
+                        Character.CharState state = (Character.CharState)reader.ReadByte();
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
 
-
-
-                        CompositeCharacter newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
+                        playerMap[id].Dead = dead;
+                        playerMap[id].Direction = dir;
+                        playerMap[id].State = state;
+                        playerMap[id].Position = new Vector2(px, py);
+                    }
+                    else if (p == Protocol.AddCharacter)
+                    {
+                        byte numPlayers = reader.ReadByte();
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
+                        CompositeCharacter newPlayer;
+                        if (numPlayers != playerMap.Count)
+                        {
+                            newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
                                 Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
-                        newPlayer.body.IgnoreGravity = true;
-                        newPlayer.wheel.IgnoreGravity = true;
-                        newPlayer.body.CollidesWith = Category.Cat24;
-                        newPlayer.wheel.CollidesWith = Category.Cat24;
-                        playerMap.Add(id, newPlayer);
-
-                        writeStream.Position = 0;
-                        writer.Write((byte)Protocol.AddCharacter);
-                        writer.Write((byte)playerMap.Count);
-                        SendData(GetDataFromMemoryStream(writeStream));
-                        try
-                        {
-                            if (terrainMaster)
-                            {
-                                writeStream.Position = 0;
-                                writer.Write((byte)Protocol.CreateTerrain);
-                                writer.Write(terrain.seed1);
-                                writer.Write(terrain.seed2);
-                                writer.Write(terrain.seed3);
-                                SendData(GetDataFromMemoryStream(writeStream));
-                            }
-                        }
-                        catch (Exception e)
-                        {
-
+                            newPlayer.body.IgnoreGravity = true;
+                            newPlayer.wheel.IgnoreGravity = true;
+                            newPlayer.body.CollidesWith = Category.Cat24;
+                            newPlayer.wheel.CollidesWith = Category.Cat24;
+                            playerMap.Add(id, newPlayer);
                         }
                     }
-                }
-
-                else if (p == Protocol.Disconnected)
-                {
-                    //pindex--;
-                    //System.Diagnostics.Debug.WriteLine(pindex);
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-                }
-                else if (p == Protocol.Movement)
-                {
-                    float px = reader.ReadSingle();
-                    float py = reader.ReadSingle();
-                    bool dead = reader.ReadBoolean();
-                    Character.CharDirection dir = (Character.CharDirection)reader.ReadByte();
-                    Character.CharState state = (Character.CharState)reader.ReadByte();
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-
-                    playerMap[id].Dead = dead;
-                    playerMap[id].Direction = dir;
-                    playerMap[id].State = state;
-                    playerMap[id].Position = new Vector2(px, py);
-                }
-                else if (p == Protocol.AddCharacter)
-                {
-                    byte numPlayers = reader.ReadByte();
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-                    CompositeCharacter newPlayer;
-                    if (numPlayers != playerMap.Count)
+                    else if (p == Protocol.CreateTerrain)
                     {
-                        newPlayer = new CompositeCharacter(world, new Vector2(ScreenManager.GraphicsDevice.Viewport.Width / 2.0f, ScreenManager.GraphicsDevice.Viewport.Height / 2.0f),
-                            Content.Load<Texture2D>("bean_ss1"), new Vector2(35.0f, 50.0f), ScreenManager.CharacterColor);
-                        newPlayer.body.IgnoreGravity = true;
-                        newPlayer.wheel.IgnoreGravity = true;
-                        newPlayer.body.CollidesWith = Category.Cat24;
-                        newPlayer.wheel.CollidesWith = Category.Cat24;
-                        playerMap.Add(id, newPlayer);
+                        if (!terrain.Created)
+                        {
+                            double s1 = reader.ReadDouble();
+                            double s2 = reader.ReadDouble();
+                            double s3 = reader.ReadDouble();
+                            byte id = reader.ReadByte();
+                            string ip = reader.ReadString();
+                            terrain.CreateTerrain(new Vector2(0, 0), s1, s2, s3);
+                        }
                     }
-                }
-                else if (p == Protocol.CreateTerrain)
-                {
-                    if (!terrain.Created)
+                    else if (p == Protocol.FireProjectile)
                     {
-                        double s1 = reader.ReadDouble();
-                        double s2 = reader.ReadDouble();
-                        double s3 = reader.ReadDouble();
+                        byte color = reader.ReadByte();
+                        byte pId = reader.ReadByte();
+                        float cx = reader.ReadSingle();
+                        float cy = reader.ReadSingle();
+                        float px = reader.ReadSingle();
+                        float py = reader.ReadSingle();
+                        byte id = reader.ReadByte();
+                        string ip = reader.ReadString();
+                        Projectile projectile;
+
+                        switch (color)
+                        {
+                            case 0:
+                                projectile = new YellowProjectile(world, new Vector2(px, py), projectileTexYellow,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            case 1:
+                                projectile = new RedProjectile(world, new Vector2(px, py), projectileTexRed,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            case 2:
+                                projectile = new BlueProjectile(world, new Vector2(px, py), projectileTexBlue,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id]);
+                                break;
+                            default:
+                                projectile = new Projectile(world, new Vector2(px, py), projectileTexYellow,
+                                    new Vector2(10f, 10f), new Vector2(cx, cy), playerMap[id], null);
+                                break;
+                        }
+                        projectile.id = ((id+1) * 100) + pId;
+                        projectile.body.CollidesWith = Category.None;
+                        projectiles.Add(projectile);
+                    }
+
+                    else if (p == Protocol.ModifyTerrain)
+                    {
+                        byte pId = reader.ReadByte();
+                        float px = reader.ReadSingle();
+                        float py = reader.ReadSingle();
+
                         byte id = reader.ReadByte();
                         string ip = reader.ReadString();
 
-                        terrain.CreateTerrain(new Vector2(0, 0), s1, s2, s3);
+                        for (int i = 0; i < projectiles.Count; i++ )
+                        {
+                            if (projectiles[i].id == ((id + 1) * 100) + pId)
+                            {
+                                CheckCollision(projectiles[i]);
+                                projectiles.RemoveAt(i);
+                            }
+                        }
+                        
                     }
-                }
 
-                else if (p == Protocol.ModifyTerrain)
+                    oldP = p;
+                }
+                catch (Exception e)
                 {
-                    float px = reader.ReadSingle();
-                    float py = reader.ReadSingle();
 
-                    byte id = reader.ReadByte();
-                    string ip = reader.ReadString();
-
-                    Projectile projectile = new YellowProjectile(world, new Vector2(px, py), projectileTexYellow, new Vector2(10.0f, 10.0f), new Vector2(0, 0), player, fartbutt);
-                    CheckCollision(projectile);
                 }
-            }
-            catch (Exception e)
-            {
-
             }
         }
+        private static Protocol oldP;
         /// <summary>
         /// Converts a MemoryStream to a byte array
         /// </summary>

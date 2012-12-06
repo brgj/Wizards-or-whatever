@@ -345,6 +345,7 @@ namespace WizardsOrWhatever
                 {
                     if (poly.Count > 2)
                     {
+                        Console.WriteLine("Adding poly at: " + gx + ", " + gy);
                         _bodyMap[gx, gy].Add(BodyFactory.CreatePolygon(World, poly, 1));
                     }
                 }

@@ -13,6 +13,7 @@ namespace WizardsOrWhatever
         Initialize = 3,
         AddCharacter = 4,
         CreateTerrain = 5,
-        ModifyTerrain = 6,
+        FireProjectile = 6,
+        ModifyTerrain = 7,
     }
 }
