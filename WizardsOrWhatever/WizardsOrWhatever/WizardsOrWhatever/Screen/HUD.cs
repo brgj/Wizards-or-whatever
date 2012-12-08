@@ -165,6 +165,7 @@ namespace WizardsOrWhatever
             }
 
             spriteBatch.DrawString(HUDfont, gameTimer.display, new Vector2(GraphicsDevice.Viewport.Width / 2, 20), Color.Red, 0, new Vector2(0, 0), .5f, SpriteEffects.None, 0);
+            spriteBatch.DrawString(HUDfont, player.score.ToString(), new Vector2( 60 , GraphicsDevice.Viewport.Height - 100), Color.Red);
 
             if (player.Dead)
             {

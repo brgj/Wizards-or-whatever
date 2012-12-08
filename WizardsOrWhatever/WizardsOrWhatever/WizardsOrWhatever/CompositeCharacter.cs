@@ -39,6 +39,7 @@ namespace WizardsOrWhatever
         double lastFireTime = 0;
         double currentFireTime = 0;
         public int fireDelay = 0;
+        public int score = 0;
 
         //Dead or alive
         public bool Dead { get; set; }
@@ -318,6 +319,7 @@ namespace WizardsOrWhatever
         //Respawn the character with max stats and a random position (on the platform for now)
         public void respawn()
         {
+            score -= 20;
             Dead = false;
             Health = maxHealth;
             Mana = maxMana;

@@ -336,6 +336,7 @@ namespace WizardsOrWhatever
                     {
                         explosions.Add(new Explosion(explosionTex, 2, enemies[i].Position, Color.White));
                         enemies.RemoveAt(i);
+                        player.score++;
                     }
                 }
                 camera.Update(gameTime);
